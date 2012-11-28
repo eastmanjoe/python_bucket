@@ -33,21 +33,43 @@ def parseLine(datfile):
         return split_line
 
 
-def parse(datfile):
+def parseFile(datfile):
     data = []
 
     row_data = parseLine(datfile)
+#    print row_data
 
     # Make sure file has data
     if row_data != "EOF":
         while True:
+            data.append(row_data)
             row_data = parseLine(datfile)
 
             if row_data == "EOF":
                 print "End Of File"
                 break
 
-            data.append(row_data)
+#            print row_data
+    else:
+        data = "EOF"
+
+    datfile.close()
+    return data
+
+def importFile(datfile):
+    data = []
+
+    line = datfile.readline().strip()
+
+    # Make sure file has data
+    if line != "EOF":
+        while True:
+            data.append(line)
+            line = datfile.readline().strip()
+
+            if not line:
+#                print "End Of File"
+                break
     else:
         data = "EOF"
 
@@ -67,6 +89,5 @@ def openFile(file_pth):
 
 if __name__ == "__main__":
     file_id = openFile(sys.argv[1])
-    """Check file extension"""
     if file_id != "":
-        parse(file_id)
+        parseFile(file_id)
