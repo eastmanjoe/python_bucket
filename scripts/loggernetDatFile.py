@@ -9,6 +9,14 @@
 import sys
 
 
+def is_number(s):
+    try:
+        float(s)
+        return True
+    except ValueError:
+        return False
+
+
 def validateToa5Header(dat_file_type):
     """Check Dat File Header to make sure it is TOA5"""
     if dat_file_type == "TOA5":
@@ -75,6 +83,57 @@ def importFile(datfile):
 
     datfile.close()
     return data
+
+
+def parseDatData(data):
+    #determine the number of rows and columns in the data table
+    data_rows = len(data)
+    data_columns = len(data[4].split(','))
+
+    print "Dat file has %d columns and %d rows" % (data_columns, data_rows - 3)
+
+    data_table = []
+
+    #Separate the imported data into header variables and a data table
+    for row in range(len(data)):
+        split_data = data[row].split(',')
+        #print split_data
+            
+        if row < 4:
+
+            data_table.append(split_data)
+
+        #put data into data table
+        elif row >= 4:
+
+            text_start_index = []
+            text_stop_index = []
+
+            #find strings that are comma seperated, have been split and concatonate back together
+            while True:
+                text_start_index = [column.startswith('"') and not column.endswith('"') for column in split_data]
+                text_stop_index = [not column.startswith('"') and column.endswith('"') for column in split_data]
+                
+                if True in text_start_index:
+                    #print text_start_index.index(True)
+                    #print text_stop_index.index(True)
+                    
+                    split_data[text_start_index.index(True):text_stop_index.index(True) + 1] = [','.join(split_data[text_start_index.index(True):text_stop_index.index(True) + 1])]
+                else:
+                    break
+
+            #convert numbers to either floats or integers
+            for c in range(1, len(split_data)):
+                if is_number(split_data[c]):
+                    if '.' in split_data[c]:
+                        split_data[c] = float(split_data[c])
+                    else:
+                        split_data[c] = int(split_data[c])
+
+            data_table.append(split_data)
+            
+    #print data_table
+    return data_table
 
 
 def openFile(file_pth):
