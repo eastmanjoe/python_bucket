@@ -10,11 +10,12 @@ x = arange(N)
 print x
 
 # Here are many sets of y to plot vs x
-#ys = [x + i for i in x]
-ys = []
-for i in x:
-    ys.append(x + i)
-    print ys
+ys = [x + i for i in x]
+# ys = []
+# for i in x:
+    # ys.append(x + i)
+
+print ys
 
 
 # We need to set the plot limits, they will not autoscale
