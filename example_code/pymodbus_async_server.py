@@ -7,9 +7,9 @@ The asynchronous server is a high performance implementation using the
 twisted library as its backend.  This allows it to scale to many thousands
 of nodes which can be helpful for testing monitoring software.
 '''
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # import the various server implementations
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 from pymodbus.server.async import StartTcpServer
 from pymodbus.server.async import StartUdpServer
 from pymodbus.server.async import StartSerialServer
@@ -19,17 +19,17 @@ from pymodbus.datastore import ModbusSequentialDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
 from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # configure the service logging
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 import logging
 logging.basicConfig()
 log = logging.getLogger()
 log.setLevel(logging.DEBUG)
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # initialize your data store
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # The datastores only respond to the addresses that they are initialized to.
 # Therefore, if you initialize a DataBlock to addresses of 0x00 to 0xFF, a
 # request to 0x100 will respond with an invalid address exception. This is
@@ -72,7 +72,7 @@ log.setLevel(logging.DEBUG)
 #         0x03: ModbusSlaveContext(...),
 #     }
 #     context = ModbusServerContext(slaves=slaves, single=False)
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 store = ModbusSlaveContext(
     di = ModbusSequentialDataBlock(0, [17]*100),
     co = ModbusSequentialDataBlock(0, [17]*100),
@@ -80,11 +80,11 @@ store = ModbusSlaveContext(
     ir = ModbusSequentialDataBlock(0, [17]*100))
 context = ModbusServerContext(slaves=store, single=True)
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # initialize the server information
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # If you don't set this or any fields, they are defaulted to empty strings.
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 identity = ModbusDeviceIdentification()
 identity.VendorName  = 'Pymodbus'
 identity.ProductCode = 'PM'
@@ -93,10 +93,11 @@ identity.ProductName = 'Pymodbus Server'
 identity.ModelName   = 'Pymodbus Server'
 identity.MajorMinorRevision = '1.0'
 
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 # run the server you want
-#---------------------------------------------------------------------------# 
+#---------------------------------------------------------------------------#
 StartTcpServer(context, identity=identity, address=("localhost", 5020))
 #StartUdpServer(context, identity=identity, address=("localhost", 502))
-#StartSerialServer(context, identity=identity, port='/dev/pts/3', framer=ModbusRtuFramer)
+StartSerialServer(context, identity=identity, port='/dev/ttyUSB0', framer=ModbusRtuFramer)
+StartSerialServer(context, identity=identity, port='/dev/ttyUSB1', framer=ModbusRtuFramer)
 #StartSerialServer(context, identity=identity, port='/dev/pts/3', framer=ModbusAsciiFramer)
