@@ -1,4 +1,6 @@
-#Lufft Modbus Query
+#!/usr/bin/env python
+
+#Modbus Master using modbus-tk
 
 #import sys
 import serial
@@ -12,7 +14,7 @@ logger = modbus_tk.utils.create_logger("console")
 if __name__ == "__main__":
     try:
         #Connect to the slave
-        master = modbus_rtu.RtuMaster(serial.Serial(port=sys.argv[1], baudrate=9600, bytesize=8, parity='N', stopbits=1, xonxoff=0))
+        master = modbus_rtu.RtuMaster(serial.Serial(port='/dev/ttyUSB1', baudrate=9600, bytesize=8, parity='N', stopbits=1, xonxoff=0))
         # master = modbus_rtu.RtuMaster(serial.Serial(port=sys.argv[1], baudrate=9600, bytesize=8, parity='N', stopbits=1, xonxoff=0))
         master.set_timeout(5.0)
         master.set_verbose(True)

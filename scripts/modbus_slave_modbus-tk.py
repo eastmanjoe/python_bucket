@@ -1,4 +1,6 @@
-#Modbus Slave
+#!/usr/bin/env python
+
+#Modbus Slave using modbus-tk
 
 import sys
 
@@ -16,7 +18,7 @@ logger = modbus_tk.utils.create_logger(name="console", record_format="%(message)
 if __name__ == "__main__":
     try:
 
-    	server = modbus_rtu.RtuServer(serial.Serial(port=4, baudrate=9600, bytesize=8, parity='N', stopbits=1, xonxoff=0))
+        server = modbus_rtu.RtuServer(serial.Serial(port=4, baudrate=9600, bytesize=8, parity='N', stopbits=1, xonxoff=0))
 
         #Connect to the slave
         logger.info("running...")
@@ -25,8 +27,8 @@ if __name__ == "__main__":
         server.start()
 
         slave_1 = server.add_slave(11)
-        slave_1.add_block('0', cst.HOLDING_REGISTERS, 100, 100)
-        slave_1.set_values('0', 100, [1,2,3])
+        slave_1.add_block('0', cst.HOLDING_REGISTERS, 0, 100)
+        slave_1.set_values('0', 0, [1,2,3])
 
         while True:
             cmd = sys.stdin.readline()
