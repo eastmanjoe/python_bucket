@@ -1,0 +1,37 @@
+{
+    "alpha":
+    {
+        "mbs1":
+        {
+            "MBS-1":
+            {
+                "value04": 13, "value05": 14, "value06": 15, "value07": 16, "value01": 10, "value02": 11, "value03": 12,
+                "freezetime": 1370633831.0, "value10": 19, "value08": 17, "value09": 18, "identifier": "MBS-1"
+            }
+        },
+        "mbs2":
+        {
+            "MBS-2":
+            {
+                "value04": 23, "value05": 24, "value06": 25, "value07": 26, "value01": 20, "value02": 21, "value03": 22,
+                "freezetime": 1370633840.0, "value10": 29, "value08": 27, "value09": 28, "identifier": "MBS-2"
+            }
+        },
+        "localdate": "2013-06-05",
+        "env":
+        {
+            "ESI-1":
+            {
+                "serial_number": "00:0C:C8:02:A8:DA", "identifier": "ESI-1", "freezetime": 1370633824.0
+            },
+            "IRRA-1":
+            {
+                "identifier": "IRRA-1", "freezetime": 1370633850.0, "irradiance_1": -0.23
+            },
+            "cts-1":
+            {
+                "cell_temp_01": -5.6545, "identifier": "cts-1", "freezetime": 1370633850.0
+            }
+        }
+    }
+}
