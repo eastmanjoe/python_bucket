@@ -16,9 +16,9 @@ the guard construct that is available in python 2.5 and up::
 #---------------------------------------------------------------------------#
 # import the various server implementations
 #---------------------------------------------------------------------------#
-# from pymodbus.client.sync import ModbusTcpClient as ModbusClient
+from pymodbus.client.sync import ModbusTcpClient as ModbusTcpClient
 #from pymodbus.client.sync import ModbusUdpClient as ModbusClient
-from pymodbus.client.sync import ModbusSerialClient as ModbusClient
+from pymodbus.client.sync import ModbusSerialClient as ModbusSerialClient
 
 #---------------------------------------------------------------------------#
 # configure the client logging
@@ -50,12 +50,13 @@ import os
 # It should be noted that you can supply an ipv4 or an ipv6 host address for
 # both the UDP and TCP clients.
 #---------------------------------------------------------------------------#
-# client = ModbusClient('localhost', port=5020)
+client = ModbusTcpClient('localhost', port=8502)
+# client = ModbusTcpClient('localhost', port=5020)
 #client = ModbusClient(method='ascii', port='/dev/pts/2', timeout=1)
-# client = ModbusClient(method='rtu', port='/dev/ttyUSB1', baudrate=9600, bytesize=8, parity='N', stopbits=1, xonxoff=0, timeout=1)
-client = ModbusClient(method='rtu', port='/dev/ttyUSB0', baudrate=9600, bytesize=8, parity='N', stopbits=1, xonxoff=0, timeout=1)
+# client = ModbusSerialClient(method='rtu', port='/dev/ttyUSB1', baudrate=9600, bytesize=8, parity='N', stopbits=1, xonxoff=0, timeout=1)
+# client = ModbusSerialClient(method='rtu', port='/dev/ttyUSB0', baudrate=9600, bytesize=8, parity='N', stopbits=1, xonxoff=0, timeout=1)
 #os.system('xuartctl --server --port 1 --speed 9600 --mode 8n1')
-# client = ModbusClient(method='rtu', port='/dev/ttyxuart1', timeout=3)
+# client = ModbusSerialClient(method='rtu', port='/dev/ttyxuart1', timeout=3)
 client.connect()
 
 #---------------------------------------------------------------------------#
@@ -81,12 +82,15 @@ client.connect()
 # assert(rr.bits == [True]*8)         # test the expected value
 
 # rq = client.write_coils(1, [False]*8)
-# rr = client.read_discrete_inputs(1,8)
+rr = client.read_discrete_inputs(30,3)
+log.debug("%s" % rr.bits)
+log.info("%s" % rr.getBit(1))
+log.info("%s" % rr.getBit(2))
 # assert(rq.function_code < 0x80)     # test that we are not an error
 # assert(rr.bits == [True]*8)         # test the expected value
 
 # rq = client.write_register(1, 10)
-rr = client.read_holding_registers(0, 10, unit=11)
+# rr = client.read_holding_registers(100, 10, unit=11)
 # assert(rq.function_code < 0x80)     # test that we are not an error
 # assert(rr.registers[0] == 17713)       # test the expected value
 
@@ -112,4 +116,6 @@ rr = client.read_holding_registers(0, 10, unit=11)
 #---------------------------------------------------------------------------#
 client.close()
 
-print rr.registers
+# print rr.registers
+print rr
+print rr.bits

@@ -96,8 +96,8 @@ identity.MajorMinorRevision = '1.0'
 #---------------------------------------------------------------------------#
 # run the server you want
 #---------------------------------------------------------------------------#
-StartTcpServer(context, identity=identity, address=("localhost", 5020))
+# StartTcpServer(context, identity=identity, address=("localhost", 5020))
 #StartUdpServer(context, identity=identity, address=("localhost", 502))
 StartSerialServer(context, identity=identity, port='/dev/ttyUSB0', framer=ModbusRtuFramer)
-StartSerialServer(context, identity=identity, port='/dev/ttyUSB1', framer=ModbusRtuFramer)
+# StartSerialServer(context, identity=identity, port='/dev/ttyUSB1', framer=ModbusRtuFramer)
 #StartSerialServer(context, identity=identity, port='/dev/pts/3', framer=ModbusAsciiFramer)
