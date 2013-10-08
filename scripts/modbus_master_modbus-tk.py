@@ -20,7 +20,7 @@ if __name__ == "__main__":
         master.set_verbose(True)
         logger.info("connected")
 
-        logger.info(master.execute(11, cst.READ_HOLDING_REGISTERS, 0, 10))
+        logger.info(master.execute(11, cst.READ_HOLDING_REGISTERS, 100, 10))
         # logger.info(master.execute(sys.argv[2], cst.READ_HOLDING_REGISTERS, 0, 10))
 
     except modbus_tk.modbus.ModbusError, e:

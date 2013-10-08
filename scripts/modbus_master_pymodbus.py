@@ -82,15 +82,15 @@ client.connect()
 # assert(rr.bits == [True]*8)         # test the expected value
 
 # rq = client.write_coils(1, [False]*8)
-rr = client.read_discrete_inputs(30,3)
-log.debug("%s" % rr.bits)
-log.info("%s" % rr.getBit(1))
-log.info("%s" % rr.getBit(2))
+# rr = client.read_discrete_inputs(30,3)
+# log.debug("%s" % rr.bits)
+# log.info("%s" % rr.getBit(1))
+# log.info("%s" % rr.getBit(2))
 # assert(rq.function_code < 0x80)     # test that we are not an error
 # assert(rr.bits == [True]*8)         # test the expected value
 
 # rq = client.write_register(1, 10)
-# rr = client.read_holding_registers(100, 10, unit=11)
+rr = client.read_holding_registers(100, 10, unit=11)
 # assert(rq.function_code < 0x80)     # test that we are not an error
 # assert(rr.registers[0] == 17713)       # test the expected value
 
