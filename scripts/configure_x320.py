@@ -239,7 +239,7 @@ def configX320(auth, ip_address, subnet, gateway, ambient_temp_id):
         '&ioRSlp=1.00000&ioROff=0.00000&ioEmailOpt=0&ioOpt1=1&ioOpt2=1&ioRmtRlyOpt1=1&ioRmtRlyOpt2=1&ioRmtRlyOpt3=1'
     logger.debug('Digital Input 1: %s' % setting_string)
 
-    r = requests.get(url + 'GET /iochng.srv?ioNum=1&ioMd=0', auth=auth)
+    r = requests.get(url + 'iochng.srv?ioNum=1&ioMd=0', auth=auth)
     r = requests.get(url + setting_string, auth=auth)
 
     assert r.status_code == 200
@@ -254,6 +254,7 @@ def configX320(auth, ip_address, subnet, gateway, ambient_temp_id):
         '&sOAct2=1&sOAlrm2=1&sRRAct1=1&sRRAlrm1=1&sRRAct2=1&sRRAlrm2=1&sRRAct3=1&sRRAlrm3=1&sRmtAct=1&sRmtAlrm=1'
     logger.debug('Digital Input 1: %s' % setting_string)
 
+    r = requests.get(url + 'sensorSetup.html?', auth=auth)
     r = requests.get(url + setting_string, auth=auth)
     assert r.status_code == 200
     time.sleep(1)
