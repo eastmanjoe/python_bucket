@@ -30,8 +30,9 @@ import argparse
 #---------------------------------------------------------------------------#
 # modbus-tk
 import modbus_tk
-import modbus_tk.defines as cst
+import modbus_tk.defines as modbus_defines
 import modbus_tk.modbus_rtu as modbus_rtu
+import modbus_tk.modbus_tcp as modbus_tcp
 import threading
 #---------------------------------------------------------------------------#
 
@@ -42,15 +43,7 @@ import logging
 
 #---------------------------------------------------------------------------#
 def parseARGS(argv):
-    # sys.stdout.write('argv is: %s\n\r' % (argv))
-    parser = argparse.ArgumentParser()
-    parser.add_argument('num', help='number of modbus slave ports and number of slaves per port (format is 1:1)')
-    parser.add_argument('ports', help='ports to use for the modbus slaves (format is COM1:COM2:COM3)')
-    parser.add_argument('-v','--verbose', help='enables/disable modbus-tk verbose mode', default='False')
-    parser.add_argument('-l','--level', help='defines the log level to be dispayed to the screen', default='info')
-    parser.add_argument('-f','--filename', help='defines the filename of the debugs log', default='')
-    args = parser.parse_args()
-    # sys.stdout.write('args is: %s\n\r' % (args))
+
 
     return (args.num, args.ports, args.verbose, args.level, args.filename)
 #---------------------------------------------------------------------------#
@@ -115,7 +108,7 @@ def startModbusSlave(modbus_ports_and_slaves_per_port, COM_PORTS, verbose_enable
 
             for modbus_slaves in xrange(0,num_slaves_per_port):
                 exec("server_%d_slave_%d = server_%d.add_slave(11 + %d)" % (modbus_ports, modbus_slaves, modbus_ports, modbus_slaves))
-                exec("server_%d_slave_%d.add_block('0', cst.HOLDING_REGISTERS, 100, 10)" % (modbus_ports, modbus_slaves))
+                exec("server_%d_slave_%d.add_block('0', modbus_defines.HOLDING_REGISTERS, 100, 10)" % (modbus_ports, modbus_slaves))
 
                 holding_register_values = range(10 + (10 * modbus_slaves), 20 + (10 * modbus_slaves))
 
@@ -143,21 +136,24 @@ def startModbusSlave(modbus_ports_and_slaves_per_port, COM_PORTS, verbose_enable
 #---------------------------------------------------------------------------#
 if __name__ == '__main__':
 
-
-    args = parseARGS(sys.argv[1:])
-
-    loglevel = str(args[3])
+    parser = argparse.ArgumentParser()
+    parser.add_argument('num', help='number of modbus slave ports and number of slaves per port (format is 1:1)')
+    parser.add_argument('ports', help='ports to use for the modbus slaves (format is COM1:COM2:COM3)')
+    parser.add_argument('-v','--verbose', help='enables/disable modbus-tk verbose mode', default='False')
+    parser.add_argument('-l','--level', help='defines the log level to be dispayed to the screen', default='info')
+    parser.add_argument('-f','--filename', help='defines the filename of the debugs log', default='')
+    args = parser.parse_args()
 
     # start-up logger
-    logger = modbus_tk.utils.create_logger(name='console', level=loglevel.upper() ,record_format="%(levelname)s: %(message)s")
+    logger = modbus_tk.utils.create_logger(name='console', level=args.level.upper() ,record_format="%(levelname)s: %(message)s")
     # logger = logging.getLogger('modbus_log')
 
     # setupLogger('debug', 'modbus_log.log')
-    setupLogger(args[3], args[4])
+    setupLogger(args.level, args.filename)
 
     logger.info('Script started on: %s' % time.asctime(time.localtime(time.time())))
 
-    startModbusSlave(args[0].split(':'), args[1].split(':'), args[2])
+    startModbusSlave(args.num.split(':'), args.ports.split(':'), args.verbose)
 
 def dependencies_for_freeezing():
     import modbus_tk
