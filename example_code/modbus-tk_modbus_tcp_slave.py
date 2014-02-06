@@ -43,21 +43,16 @@ if __name__ == '__main__':
     logger.debug('Log Filename is: %s' % (args.filename))
 
 
-    server = modbus_tcp.TcpServer(port=args.port)
+    server = modbus_tcp.TcpServer(port=int(args.port))
 
     #creates a slave with id 0
-    slave1 = server.add_slave(1)
+    slave1 = server.add_slave(11)
     #add 2 blocks of holding registers
-    slave1.add_block("a", mdef.HOLDING_REGISTERS, 0, 100)#address 0, length 100
+    slave1.add_block("a", mdef.HOLDING_REGISTERS, 100, 20)#address 0, length 100
     slave1.add_block("b", mdef.HOLDING_REGISTERS, 200, 20)#address 200, length 20
 
-    #creates another slave with id 5
-    slave5 = server.add_slave(5)
-    slave5.add_block("c", mdef.COILS, 0, 100)
-    slave5.add_block("d", mdef.HOLDING_REGISTERS, 0, 100)
-
     #set the values of registers at address 0
-    slave1.set_values("a", 0, range(100))
+    slave1.set_values("a", 100, range(20))
 
     server.start()
 
