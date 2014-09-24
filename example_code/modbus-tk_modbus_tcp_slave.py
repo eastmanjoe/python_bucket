@@ -5,6 +5,7 @@ import modbus_tk.defines as mdef
 import sys
 import argparse
 import logging
+import signal
 
 
 if __name__ == '__main__':

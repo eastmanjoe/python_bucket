@@ -16,7 +16,8 @@ if __name__ == "__main__":
     parser.add_argument('-l', '--level', help='defines the log level to be dispayed to the screen', default='info')
     parser.add_argument('-f', '--filename', help='defines the filename of the debugs log', default='')
     parser.add_argument('-ip', '--ipaddress', help='defines the ip address to query', default='')
-    parser.add_argument('-p', '--port', help='set port for modbus slave', default='/dev/ttyUSB0')
+    parser.add_argument('-p', '--port', help='set port of modbus slave', default='/dev/ttyUSB0')
+    parser.add_argument('-mb', '--modbus_address', help='set Modbus Address', default='1')
     args = parser.parse_args()
 
     # assuming args.level is bound to the string value obtained from the
@@ -47,6 +48,9 @@ if __name__ == "__main__":
     logger.debug('Log Filename is: %s' % (args.filename))
 
     try:
+        reg_hex = []
+
+
         if args.port.isdigit():
             # if args.ipaddress.split('.') :
                 # raise ValueError('Invalid IP Address')
@@ -56,12 +60,19 @@ if __name__ == "__main__":
             # connect to the RTU slave
             master = modbus_rtu.RtuMaster(serial.Serial(port=args.port, baudrate=9600, bytesize=8, parity='N', stopbits=1, xonxoff=0))
             # master = modbus_rtu.RtuMaster(serial.Serial(port=sys.argv[1], baudrate=9600, bytesize=8, parity='N', stopbits=1, xonxoff=0))
-        master.set_timeout(5.0)
+        master.set_timeout(1.0)
         master.set_verbose(True)
         logger.info("connected")
 
-        logger.info(master.execute(11, cst.READ_HOLDING_REGISTERS, 100, 10))
-        # logger.info(master.execute(sys.argv[2], cst.READ_HOLDING_REGISTERS, 0, 10))
+        # Serial Number
+        regs = master.execute(int(args.modbus_address), cst.READ_HOLDING_REGISTERS, 9, 8)
+        print regs
+
+        # Instantaneous Data
+        regs = master.execute(int(args.modbus_address), cst.READ_HOLDING_REGISTERS, 1000, 30)
+        print regs
+
+        master.close()
 
     except modbus_tk.modbus.ModbusError, e:
         logger.error("%s- Code=%d" % (e, e.get_exception_code()))
