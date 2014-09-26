@@ -1,13 +1,18 @@
 #!/usr/bin/env python
 
 '''
-Mini-project - Week 1
-'''
+Mini-project - Week 01
 
-# CodeSkulptor Save URL's
+Rock-Paper-Scissors-Lizard-Spock
+'''
+# URL for assignment tempalte
+# http://www.codeskulptor.org/#examples-rpsls_template.py
+
+# URL for completed assignement
 # http://www.codeskulptor.org/#user38_SehaoMH3RD_0.py
 # http://www.codeskulptor.org/#user38_SehaoMH3RD_1.py
 
+# Copy and paste below the line into CodeSkulptor
 #------------------------------------------------------------------------------
 # Rock-paper-scissors-lizard-Spock Mini-Project
 
@@ -57,7 +62,7 @@ def number_to_name(number):
 
     return name
 
-def rpsls(player_choice): 
+def rpsls(player_choice):
     print ""
     print "Player chooses", player_choice
     player_number = name_to_number(player_choice)
@@ -69,14 +74,14 @@ def rpsls(player_choice):
 
     # determine the winner
     difference = (player_number - comp_number) % 5
-    
+
     if (difference == 1) or (difference == 2):
         print "Player wins!"
     elif (difference == 3) or (difference == 4):
         print "Computer wins!"
     else:
         print "Player and computer tie!"
-    
+
 rpsls("rock")
 rpsls("Spock")
 rpsls("paper")
