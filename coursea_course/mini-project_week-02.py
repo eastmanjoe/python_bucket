@@ -7,6 +7,9 @@
 # http://www.codeskulptor.org/#user38_JkUTMa0hHG_0.py
 # http://www.codeskulptor.org/#user38_JkUTMa0hHG_1.py
 # http://www.codeskulptor.org/#user38_JkUTMa0hHG_2.py
+# http://www.codeskulptor.org/#user38_JkUTMa0hHG_3.py
+# http://www.codeskulptor.org/#user38_JkUTMa0hHG_4.py
+# http://www.codeskulptor.org/#user38_JkUTMa0hHG_5.py
 
 # Copy and paste below the line into CodeSkulptor
 #------------------------------------------------------------------------------
@@ -31,14 +34,10 @@ def new_game():
     global secret_number
     global guesses_remaining
 
-    # set the number of guesses based on the secret number range
-    if secret_number_range == 100:
-        guesses_remaining = 7
-    elif secret_number_range == 1000:
-        guesses_remaining = 10
-
     # calculate the number of guesses based on the secret number range [2 ** n >= high - low + 1]
-    # guesses_remaining = (secret_number_range - 0 + 1)
+    # number of guesses for secret number range of 0 - 100 is 7
+    # number of guesses for secret number range of 0 - 1000 is 10
+    guesses_remaining = int(math.ceil(math.log(secret_number_range - 0 + 1, 2)))
 
     # generate the secret number
     secret_number = random.randrange(0, secret_number_range)
@@ -68,7 +67,10 @@ def range1000():
 
 
 def input_guess(guess):
-    ''' input field to capture the players guess and determine in the guess matches the secret number'''
+    '''
+        input field to capture the players guess and determine if the guess matches the secret number.
+        keeps track of the number of guesses the player has entered.
+    '''
 
     global guesses_remaining
 
@@ -87,13 +89,12 @@ def input_guess(guess):
         print 'You ran out of guesses.  The number was', secret_number
         print ''
         new_game()
-    else:
-        if secret_number > guess:
-            print 'Higher!'
-            print ''
-        else:
-            print 'Lower!'
-            print ''
+    elif secret_number > guess:
+        print 'Higher!'
+        print ''
+    elif secret_number < guess:
+        print 'Lower!'
+        print ''
 
 
 # create frame
