@@ -31,7 +31,7 @@ def CSI_marco_polo(message):
     # set socket objects so
     #   - socket is non-blocking with a set timeout period in seconds
     #   - socket the socket level permissions to broadcast the UPD packet
-    sock.settimeout(1.0)
+    sock.settimeout(5.0)
     sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
 
     # bind the socket to the public interface
@@ -43,11 +43,19 @@ def CSI_marco_polo(message):
     # print "UDP target IP:", SENDTO_UDP_IP
     print "UDP port:", UDP_PORT
 
-    while True:
-        time.sleep(0.1)
 
-        data, addr = sock.recvfrom(1024) # buffer size is 1024 bytes
-        print "received message:", data
+    try:
+        while True:
+            time.sleep(0.1)
+            data, addr = sock.recvfrom(1024)
+            print "received message", data, "from", addr
+
+    except socket.timeout:
+        print "socket timed out"
+
+    except socket.error:
+        print socket.error
+
 
 
 
@@ -61,6 +69,12 @@ if __name__ == '__main__':
     # parser.add_argument('-l','--level', help='defines the log level to be dispayed to the screen', default='info')
     # parser.add_argument('-f','--filename', help='defines the filename of the debugs log', default='')
     # args = parser.parse_args()
+
+    # F2 = 242 = o grave
+    # 17 = 023 = End Transmission Block (ETB)
+    # 01 = 001 = ^A (Start of Header [SOH])
+    # E6 = 230 = ae ligature 1
+    # C5 = 197 = A ring
 
     data = "f21701e6c5"
     message = ''.join(chr(int(data[i:i+2], 16)) for i in range(0, len(data), 2))
