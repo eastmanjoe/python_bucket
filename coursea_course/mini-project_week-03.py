@@ -6,6 +6,9 @@
 # URL for completed assignment
 # http://www.codeskulptor.org/#user38_CyoiYPSDMg_1.py
 # http://www.codeskulptor.org/#user38_CyoiYPSDMg_2.py - working timer
+# http://www.codeskulptor.org/#user38_CyoiYPSDMg_3.py
+# http://www.codeskulptor.org/#user38_CyoiYPSDMg_4.py
+# http://www.codeskulptor.org/#user38_CyoiYPSDMg_5.py
 
 # Copy and paste below the line into CodeSkulptor
 #------------------------------------------------------------------------------
@@ -20,8 +23,8 @@ import simplegui
 
 # define global variables
 stopwatch_counter = 0
-stopwatch_total_stops = 0
-stopwatch_win_stops = 0
+stopwatch_stops_total = 0
+stopwatch_stops_win = 0
 
 # define helper function format that converts time
 # in tenths of seconds into formatted string A:BC.D
@@ -51,18 +54,24 @@ def stopwatchStart():
     timer.start()
 
 def stopwatchStop():
-    global stopwatch_total_stops, stopwatch_win_stops
+    global stopwatch_stops_total, stopwatch_stops_win
 
-    timer.stop()
+    if timer.is_running():
+        timer.stop()
+        stopwatch_stops_total += 1
+
+        if (stopwatch_counter % 10 == 0):
+            stopwatch_stops_win += 1
+
 
 def stopwatchReset():
-    global stopwatch_counter
+    global stopwatch_counter, stopwatch_stops_win, stopwatch_stops_total
 
     timer.stop()
 
     stopwatch_counter = 0
-    stopwatch_total_stops = 0
-    stopwatch_win_stops = 0
+    stopwatch_stops_total = 0
+    stopwatch_stops_win = 0
 
 # define event handler for timer with 0.1 sec interval
 def stopwatchTimerHandler():
@@ -73,6 +82,16 @@ def stopwatchTimerHandler():
 
 def stopwatchDrawHandler(canvas):
     canvas.draw_text(format(stopwatch_counter), (40, 110), 36, 'White')
+    canvas.draw_text(str(stopwatch_stops_win) + "/" + str(stopwatch_stops_total), (150, 40), 24, 'Red')
+
+
+def stopwatchKeyHandler(key):
+    if chr(key) == 'S':
+        stopwatchStop()
+    elif chr(key) == 'A':
+        stopwatchStart()
+    elif chr(key) == 'R':
+        stopwatchReset()
 
 
 # create frame
@@ -80,6 +99,11 @@ frame = simplegui.create_frame('Stopwatch: The Game', 200, 200)
 frame.add_button('Start', stopwatchStart, 100)
 frame.add_button('Stop', stopwatchStop, 100)
 frame.add_button('Reset', stopwatchReset, 100)
+frame.set_keydown_handler(stopwatchKeyHandler)
+frame.add_label('Keyboard Input:')
+frame.add_label('    a = Start')
+frame.add_label('    s = Stop')
+frame.add_label('    r = Reset')
 frame.set_draw_handler(stopwatchDrawHandler)
 frame.start()
 
