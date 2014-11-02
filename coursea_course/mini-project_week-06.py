@@ -5,6 +5,7 @@
 
 # URL for completed assignment
 # http://www.codeskulptor.org/#user38_vITLjG598O_0.py
+# http://www.codeskulptor.org/#user38_vITLjG598O_1.py
 
 # Copy and paste below the line into CodeSkulptor
 '''
@@ -72,71 +73,126 @@ class Card:
 # define hand class
 class Hand:
     def __init__(self):
-        self.card_lst = []
+        self.hand = []
+        self.value = 0
+        self.ace_in_hand = False
 
     def __str__(self):
         card_string = ''
-        for i in range(len(self.card_lst)):
-            card_string += ' ' + str(self.card_lst[i])
+        for i in range(len(self.hand)):
+            card_string += ' ' + str(self.hand[i])
         return 'Hand contains' + card_string
 
     def add_card(self, card):
-        self.card_lst.append(card)
+        self.hand.append(card)
 
     def get_value(self):
         # count aces as 1, if the hand has an ace, then add 10 to hand value if it doesn't bust
-        hand_value =
-        return hand_value
+        self.value = 0
+
+        for c in self.hand:
+            # print self.value, c.get_rank(), c.get_suit(), self.ace_in_hand
+            self.value += VALUES[c.get_rank()]
+
+            if c.get_rank() == 'A': self.ace_in_hand = True
+
+        if not self.ace_in_hand:
+            return self.value
+        else:
+            if self.value + 10 <= 21:
+                return self.value + 10
+            else:
+                return self.value
 
     def draw(self, canvas, pos):
-        pass    # draw a hand on the canvas, use the draw method for cards
-
+        card.draw(canvas, pos)
 
 # define deck class
 class Deck:
     def __init__(self):
-        self.deck = []
-
-        for s in SUITS:
-            for r in RANKS:
-                self.deck.append(Card(s, r))
+        self.deck = [Card(s, r) for s in SUITS for r in RANKS]
 
     def shuffle(self):
         # shuffle the deck
         random.shuffle(self.deck)
 
     def deal_card(self):
-        return self.deck.pop(0)
+        # pull the card from the end of the deck
+        return self.deck.pop(-1)
 
     def __str__(self):
         deck_string = ''
+
         for i in range(len(self.deck)):
             deck_string += ' ' + str(self.deck[i])
+
         return 'Deck contains' + deck_string
 
 
 
 #define event handlers for buttons
 def deal():
-    global outcome, in_play
+    global outcome, in_play, dealer_hand, player_hand, game_deck
 
-    # your code goes here
+    game_deck = Deck()
+    game_deck.shuffle()
 
+    player_hand = Hand()
+    dealer_hand = Hand()
+
+    player_hand.add_card(game_deck.deal_card())
+    dealer_hand.add_card(game_deck.deal_card())
+    player_hand.add_card(game_deck.deal_card())
+    dealer_hand.add_card(game_deck.deal_card())
+
+    print 'Dealer', dealer_hand
+    print 'Player', player_hand
+
+    outcome = ''
     in_play = True
 
 def hit():
-    pass    # replace with your code below
-
+    global outcome, in_play, score, player_hand
     # if the hand is in play, hit the player
+    if in_play:
+        player_hand.add_card(game_deck.deal_card())
 
-    # if busted, assign a message to outcome, update in_play and score
+        if player_hand.get_value() > 21:
+            outcome = "Player's hand is busted"
+            in_play = False
+            score -= 1
+
+        print 'Dealer', dealer_hand
+        print 'Player', player_hand
+        print 'Outcome:', outcome
+        print 'Score:', score
 
 def stand():
-    pass    # replace with your code below
+    global outcome, in_play, score, player_hand
 
     # if hand is in play, repeatedly hit dealer until his hand has value 17 or more
+    while in_play:
+        if dealer_hand.get_value() > 21:
+            outcome = "Dealer's hand is busted"
+            in_play = False
+            score += 1
+        elif dealer_hand.get_value() >= 17:
+            in_play = False
 
-    # assign a message to outcome, update in_play and score
+            if dealer_hand.get_value() >= player_hand.get_value():
+                outcome = "Dealer WINS !!!"
+                score -= 1
+            elif dealer_hand.get_value() < player_hand.get_value():
+                outcome = "Player WINS !!!"
+                score += 1
+        else:
+            dealer_hand.add_card(game_deck.deal_card())
+
+
+    print 'Dealer', dealer_hand
+    print 'Player', player_hand
+    print 'Outcome:', outcome
+    print 'Score:', score
 
 # draw handler
 def draw(canvas):
