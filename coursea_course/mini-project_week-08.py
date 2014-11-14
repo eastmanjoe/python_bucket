@@ -11,6 +11,10 @@
 # http://www.codeskulptor.org/#user38_3ql5uvd9X1_5.py - Splash Screen
 # http://www.codeskulptor.org/#user38_3ql5uvd9X1_6.py - Collisions
 # http://www.codeskulptor.org/#user38_3ql5uvd9X1_7.py - Missle Lifespan
+# http://www.codeskulptor.org/#user38_3ql5uvd9X1_8.py - Missle Collision
+# http://www.codeskulptor.org/#user38_3ql5uvd9X1_9.py - Complete Game
+# http://www.codeskulptor.org/#user38_3ql5uvd9X1_10.py - Game with Animation
+# http://www.codeskulptor.org/#user38_3ql5uvd9X1_11.py - Submission
 
 
 # Copy and paste below the line into CodeSkulptor
@@ -41,6 +45,7 @@ lives = 3
 time = 0.5
 rock_group = set([])
 missile_group = set([])
+explosion_group = set([])
 started = False
 
 class ImageInfo:
@@ -219,7 +224,11 @@ class Sprite:
             sound.play()
 
     def draw(self, canvas):
-        canvas.draw_image(self.image, self.image_center, self.image_size, self.pos, self.image_size, self.angle)
+        if self.animated:
+            self.image_center = [self.image_center[0] + self.image_size[0], self.image_center[1]]
+            canvas.draw_image(self.image, self.image_center, self.image_size, self.pos, self.image_size, self.angle)
+        else:
+            canvas.draw_image(self.image, self.image_center, self.image_size, self.pos, self.image_size, self.angle)
 
     def update(self):
 
@@ -251,7 +260,7 @@ class Sprite:
 
 
 def draw(canvas):
-    global time, lives
+    global time, lives, score, started
     offset = 25
 
     # animiate background
@@ -263,35 +272,44 @@ def draw(canvas):
     canvas.draw_image(debris_image, center, size, (wtime - WIDTH / 2, HEIGHT / 2), (WIDTH, HEIGHT))
     canvas.draw_image(debris_image, center, size, (wtime + WIDTH / 2, HEIGHT / 2), (WIDTH, HEIGHT))
 
-    # draw ship and sprites
-    my_ship.draw(canvas)
-
-    process_sprite_group(canvas, rock_group)
-    process_sprite_group(canvas, missile_group)
-
-    # update ship and sprites
-    my_ship.update()
-
-    if group_collide(rock_group, my_ship):
-        lives -= 1
-
-    # if group_group_collide(rock_group, missile_group):
-
     canvas.draw_text("Lives", [WIDTH // 10, HEIGHT // 10], 32, 'White')
     canvas.draw_text(str(lives), [(WIDTH // 10) + offset, HEIGHT // 6], 48, 'White')
     canvas.draw_text("Score", [WIDTH - (WIDTH // 5), HEIGHT // 10], 32, 'White')
     canvas.draw_text(str(score), [WIDTH - (WIDTH // 5) + offset, HEIGHT // 6], 48, 'White')
 
+    # draw ship and update postion
+    my_ship.draw(canvas)
+    my_ship.update()
+    process_sprite_group(canvas, missile_group)
+
+    if started:
+        timer.start()
+        process_sprite_group(canvas, rock_group)
+        process_sprite_group(canvas, explosion_group)
+
+        score += group_group_collide(rock_group, missile_group)
+
+        if group_collide(rock_group, my_ship):
+            lives -= 1
+
+            if lives == 0:
+                started = False
+                soundtrack.rewind()
+                for rock in set(rock_group):
+                    rock_group.discard(rock)
+
+
     # draw splash screen if not started
     if not started:
+        timer.stop()
         canvas.draw_image(splash_image, splash_info.get_center(), splash_info.get_size(), [WIDTH / 2, HEIGHT / 2], splash_info.get_size())
 
 # timer handler that spawns a rock
 def rock_spawner():
     global rock_group
 
-    vel_lower = -0.9
-    vel_upper = 0.9
+    vel_lower = -0.9 + (score * 0.0001)
+    vel_upper = 0.9 + (score * 0.0001)
     vel_range_width = vel_upper - vel_lower
 
     pos = [random.randrange(WIDTH), random.randrange(HEIGHT)]
@@ -302,7 +320,8 @@ def rock_spawner():
     ang_range_width = ang_upper - ang_lower
     angle_vel = random.random() * ang_range_width + ang_lower
 
-    if len(rock_group) < 12:
+    if (len(rock_group) < 12) and (dist(pos, my_ship.get_position()) > (my_ship.get_radius() + asteroid_info.get_radius() + 25)):
+    # if len(rock_group) < 12:
         a_rock = Sprite(pos, vel, 0, angle_vel, asteroid_image, asteroid_info)
         rock_group.add(a_rock)
 
@@ -316,8 +335,12 @@ def process_sprite_group(canvas, sprite_group):
 
 
 def group_collide(group, other_object):
+    global explosion_group
+
     for obj in set(group):
         if obj.collide(other_object):
+            a_explosion = Sprite(obj.get_position(), [0, 0], 0, 0, explosion_image, explosion_info, explosion_sound)
+            explosion_group.add(a_explosion)
             group.remove(obj)
             return True
 
@@ -353,7 +376,8 @@ def keydown(key):
 
 
 def click(pos):
-    global started
+    global started, lives, score
+
     center = [WIDTH / 2, HEIGHT / 2]
     size = splash_info.get_size()
     inwidth = (center[0] - size[0] / 2) < pos[0] < (center[0] + size[0] / 2)
@@ -361,13 +385,15 @@ def click(pos):
     if (not started) and inwidth and inheight:
         started = True
 
+    soundtrack.play()
+    lives = 3
+    score = 0
+
 # initialize frame
 frame = simplegui.create_frame("Asteroids", WIDTH, HEIGHT)
 
 # initialize ship and two sprites
 my_ship = Ship([WIDTH / 2, HEIGHT / 2], [0, 0], 0, ship_image, ship_info, ship_thrust_sound)
-# missile_group = Sprite([-10, -10], [0, 0], 0, 0, missile_image, missile_info, missile_sound)
-# rock_group = Sprite([WIDTH / 3, HEIGHT / 3], [1, 1], 0, 0.1, asteroid_image, asteroid_info)
 
 # register handlers
 frame.set_keyup_handler(keyup)
@@ -378,5 +404,4 @@ frame.set_mouseclick_handler(click)
 timer = simplegui.create_timer(1000.0, rock_spawner)
 
 # get things rolling
-timer.start()
 frame.start()
