@@ -50,13 +50,14 @@ if __name__ == "__main__":
     try:
         reg_hex = []
 
-
         if args.port.isdigit():
             # if args.ipaddress.split('.') :
                 # raise ValueError('Invalid IP Address')
             #Connect to the TCP slave
-            master = modbus_tcp.TcpMaster(host=args.ipaddress, port=args.port, timeout_in_sec=1.0)
+            print "Modbus TCP"
+            master = modbus_tcp.TcpMaster(host=args.ipaddress, port=int(args.port), timeout_in_sec=1.0)
         else:
+            print "Modbus RTU"
             # connect to the RTU slave
             master = modbus_rtu.RtuMaster(serial.Serial(port=args.port, baudrate=9600, bytesize=8, parity='N', stopbits=1, xonxoff=0))
             # master = modbus_rtu.RtuMaster(serial.Serial(port=sys.argv[1], baudrate=9600, bytesize=8, parity='N', stopbits=1, xonxoff=0))
