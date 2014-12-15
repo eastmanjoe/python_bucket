@@ -92,8 +92,10 @@ def startModbusSlave():
     #---------------------------------------------------------------------------#
     # modbus-tk
     try:
-        server_USB0 = modbus_rtu.RtuServer(serial.Serial(port="/dev/ttyUSB0", baudrate=9600, bytesize=8, parity='N', stopbits=1, xonxoff=0))
-        server_USB1 = modbus_rtu.RtuServer(serial.Serial(port="/dev/ttyUSB1", baudrate=9600, bytesize=8, parity='N', stopbits=1, xonxoff=0))
+        # server_USB0 = modbus_rtu.RtuServer(serial.Serial(port="/dev/ttyUSB0", baudrate=9600, bytesize=8, parity='N', stopbits=1, xonxoff=0))
+        # server_USB1 = modbus_rtu.RtuServer(serial.Serial(port="/dev/ttyUSB1", baudrate=9600, bytesize=8, parity='N', stopbits=1, xonxoff=0))
+        server_USB0 = modbus_rtu.RtuServer(serial.Serial(port="COM7", baudrate=9600, bytesize=8, parity='N', stopbits=1, xonxoff=0))
+        server_USB1 = modbus_rtu.RtuServer(serial.Serial(port="COM8", baudrate=9600, bytesize=8, parity='N', stopbits=1, xonxoff=0))
 
         #Connect to the slave
         logger.info("running...")
@@ -101,17 +103,16 @@ def startModbusSlave():
 
         # Start Modbus Slave servers
         server_USB0.start()
-        slave_USB0 = server_USB0.add_slave(11)
-
         server_USB1.start()
-        slave_USB1 = server_USB1.add_slave(11)
 
-        # Add data to Modbus Slave servers
-        slave_USB0.add_block("0", cst.HOLDING_REGISTERS, 100, 10)
-        slave_USB0.set_values("0", 100, [10, 11, 12, 13, 14, 15, 16, 17, 18, 19])
+        for mb_addr in range(11, 44):
+            slave_USB0 = server_USB0.add_slave(mb_addr)
+            slave_USB0.add_block("0", cst.HOLDING_REGISTERS, 100, 10)
+            slave_USB0.set_values("0", 100, [10, 11, 12, 13, 14, 15, 16, 17, 18, 19])
 
-        slave_USB1.add_block("0", cst.HOLDING_REGISTERS, 100, 10)
-        slave_USB1.set_values("0", 100, [20, 21, 22, 23, 24, 25, 26, 27, 28, 29])
+            slave_USB1 = server_USB1.add_slave(mb_addr)
+            slave_USB1.add_block("0", cst.HOLDING_REGISTERS, 100, 10)
+            slave_USB1.set_values("0", 100, [20, 21, 22, 23, 24, 25, 26, 27, 28, 29])
 
         while True:
             cmd = sys.stdin.readline()
