@@ -285,7 +285,7 @@ if __name__ == '__main__':
     parser.add_argument('--subnet', help='defines the subnet mask', default='255.255.255.0')
     parser.add_argument('--gateway', help='defines the default gateway', default='172.28.0.1')
     parser.add_argument('--lan_connection_name', help='defines the Network Connection to use', default='Local Area Connection')
-    parser.add_argument('x320_mac', help='defines the default gateway', default='')
+    parser.add_argument('x320_mac', help='defines the mac address of the x-320 to configure', default='')
     args = parser.parse_args()
     # sys.stdout.write('args is: %s\n\r' % (args))
 
