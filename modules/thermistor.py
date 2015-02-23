@@ -7,7 +7,7 @@
 # import modules
 import math
 
-class Thermistor:
+class thermistor:
     """useful calculations for thermistors."""
     def __init__(self, sh_a, sh_b, sh_c):
         # super(ClassName, self).__init__()
@@ -113,8 +113,8 @@ class Thermistor:
 
 if __name__ == '__main__':
 
-    t1 = Thermistor(9.376e-4, 2.208e-4, 1.276e-7)
-    t2 = Thermistor(.0009376, .0002208, .0000001276)
+    t1 = thermistor(9.376e-4, 2.208e-4, 1.276e-7)
+    t2 = thermistor(.0009376, .0002208, .0000001276)
     # thermistor_data = { 'temp_c_low': -40, 'temp_r_low': 884600,
     #                     'temp_c_mid': 25, 'temp_r_mid': 30000,
     #                     'temp_c_high': 150, 'temp_r_high': 550200}
