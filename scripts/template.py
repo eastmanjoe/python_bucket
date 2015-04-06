@@ -12,10 +12,12 @@ import sys
 import time
 import argparse
 import logging
-import requests
 import subprocess
+import signal
 
-import logging
+import requests
+
+__version__ = '1.0.0'
 
 def setupLogger(loglevel, log_filename):
 
@@ -52,10 +54,21 @@ def setupLogger(loglevel, log_filename):
     logger.info('Log Level is: %s' % (loglevel))
     logger.info('Log Filename is: %s' % (log_filename))
 
+#---------------------------------------------------------------------------#
+def signal_handler(signal, frame):
+    print ('You pressed Ctrl+C')
+    logger.info('Script Stopped on: %s' % time.asctime(
+        time.localtime(time.time())))
+    sys.exit(0)
 
 #---------------------------------------------------------------------------#
 if __name__ == '__main__':
+
+    #register Ctrl-C signal handler
+    signal.signal(signal.SIGINT, signal_handler)
+
     logger = logging.getLogger('logger')
+
 
     parser = argparse.ArgumentParser()
     parser.add_argument(
@@ -74,6 +87,9 @@ if __name__ == '__main__':
     parser.add_argument(
         '-f','--filename', help='defines the filename of the debugs log',
         default=''
+        )
+    parser.add_argument(
+        '-v', '--version', action='version',version='%(prog)s ' + __version__
         )
     args = parser.parse_args()
 
