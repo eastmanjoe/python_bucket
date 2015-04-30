@@ -17,21 +17,16 @@ import signal
 from platform import system
 import random
 
+import serial
 import modbus_tk
 import modbus_tk.defines as cst
 import modbus_tk.modbus_tcp as modbus_tcp
 import modbus_tk.modbus_rtu as modbus_rtu
-#---------------------------------------------------------------------------#
-def signal_handler(signal, frame):
-    print ('You pressed Ctrl+C')
-    response = controller.set_multiple_digital_outputs(1, 2, ['OFF', 'OFF'])
-    controller.disconnect()
-    logger.info('Test Stoped on: %s' % time.asctime(time.localtime(time.time())))
-    sys.exit(0)
-
 
 #---------------------------------------------------------------------------#
-def setupLogger(loglevel, logfilename):
+def setupLogger(loggername, loglevel, logfilename):
+
+    logger = logging.getLogger(loggername)
     # assuming loglevel is bound to the string value obtained from the
     # command line argument. Convert to upper case to allow the user to
     # specify --log=DEBUG or --log=debug
@@ -39,13 +34,15 @@ def setupLogger(loglevel, logfilename):
     if not isinstance(numeric_level, int):
         raise ValueError('Invalid log level: %s' % loglevel)
 
-    # configure logger
-    # logger.setLevel(loglevel.upper())
-    # handler_stream_formatter = logging.Formatter('%(levelname)s: %(message)s')
-    # handler_stream = logging.StreamHandler()
-    # handler_stream.setFormatter(handler_stream_formatter)
-    # handler_stream.setLevel(loglevel.upper())
-    # logger.addHandler(handler_stream)
+    logger.setLevel(loglevel.upper())
+    logger.info('Log Level is: %s' % (args.level))
+
+    # configure logger for stdout
+    handler_stream_formatter = logging.Formatter('%(module)s.%(funcName)s.%(levelname)s: %(message)s')
+    handler_stream = logging.StreamHandler(sys.stdout)
+    handler_stream.setFormatter(handler_stream_formatter)
+    handler_stream.setLevel(loglevel.upper())
+    logger.addHandler(handler_stream)
 
     if logfilename != '':
         if system() == 'Windows':
@@ -54,13 +51,13 @@ def setupLogger(loglevel, logfilename):
             handler_file = logging.FileHandler('/tmp/' + logfilename)
 
         handler_file_formatter = logging.Formatter(
-            '%(asctime)s %(levelname)s: %(message)s')
+            '%(asctime)s %(module)s.%(funcName)s.%(levelname)s: %(message)s')
         handler_file.setFormatter(handler_file_formatter)
         handler_file.setLevel(loglevel.upper())
         logger.addHandler(handler_file)
+        logger.info('Log Filename is: %s' % (args.filename))
 
-    logger.info('Log Level is: %s' % (loglevel))
-    logger.info('Log Filename is: %s' % (logfilename))
+    return logger
 
 #---------------------------------------------------------------------------#
 class SixnetIo:
@@ -149,13 +146,69 @@ class SixnetIo:
         self.master.close()
 #---------------------------------------------------------------------------#
 
+def main(args):
+    try:
+        port = '/dev/ttyxuart3'
+        dut1_port = serial.Serial(port, baudrate=115200, bytesize=8, parity='N', stopbits=1, xonxoff=0, rtscts=0)
+        dut1_port.open()
+    except IOError:
+        logger.error('Cannot open ' + port)
+
+    try:
+        port = '/dev/ttyxuart5'
+        dut2_port = serial.Serial(port, baudrate=115200, bytesize=8, parity='N', stopbits=1, xonxoff=0, rtscts=0)
+        dut2_port.open()
+    except IOError:
+        logger.error('Cannot open ' + port)
+
+    #start instance of sixnet i/o class
+    controller = SixnetIo(args.ipaddress, args.tcp_port, args.modbus_address, args.verbose)
+
+
+    logger.info('Test Started on: %s' % time.asctime(time.localtime(time.time())))
+
+    #initialize cycle counter to zero
+    count = 0
+
+    while True:
+
+        try:
+            count += 1
+            logger.info('Cycle # is: %d' % count)
+
+            # DO1 = DUT#1
+            # DO2 = DUT#2
+
+
+            #----------------------------------------------------------------------#
+            # Simulating disconnecting the connector
+            response = controller.set_multiple_digital_outputs(1, 2, ['ON', 'ON'])
+
+            delay = random.randint(5, 300)
+            logger.info('Off Delay is: %d' % delay)
+            time.sleep(delay)
+
+
+            response = controller.set_multiple_digital_outputs(1, 2, ['OFF', 'OFF'])
+
+            delay = random.randint(5, 300)
+            logger.info('On Delay is: %d' % delay)
+            time.sleep(delay)
+            #----------------------------------------------------------------------#
+        except KeyboardInterrupt:
+            response = controller.set_multiple_digital_outputs(1, 2, ['OFF', 'OFF'])
+            controller.disconnect()
+            logger.info('Test Stopped on: %s' % time.asctime(time.localtime(time.time())))
+            sys.exit(0)
+
+
 
 #---------------------------------------------------------------------------#
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('ipaddress',
         help='defines the ip address to query', default='')
-    parser.add_argument('port', help='set port of modbus slave', default=502)
+    parser.add_argument('tcp_port', help='set port of modbus slave', default=502)
     parser.add_argument('modbus_address', type=int,
         help='set Modbus Address', default='1')
     parser.add_argument('-l', '--level', type=str,
@@ -167,44 +220,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     # start-up logger
-    logger = modbus_tk.utils.create_logger(name='console',
-        level=args.level.upper() ,record_format="%(levelname)s: %(message)s")
+    # logger = modbus_tk.utils.create_logger(name='console',
+    #     level=args.level.upper() ,record_format="%(levelname)s: %(message)s")
+    logger = setupLogger(__name__, args.level, args.filename)
 
-    setupLogger(args.level, args.filename)
-
-
-    #start instance of sixnet i/o class
-    controller = SixnetIo(args.ipaddress, args.port, args.modbus_address, args.verbose)
-
-    #register Ctrl-C signal handler
-    signal.signal(signal.SIGINT, signal_handler)
-
-    logger.info('Test Started on: %s' % time.asctime(time.localtime(time.time())))
-
-    #initialize cycle counter to zero
-    count = 0
-
-    while True:
-
-        count += 1
-        logger.info('Cycle # is: %d' % count)
-
-        # DO1 = DUT#1
-        # DO2 = DUT#2
-
-
-        #----------------------------------------------------------------------#
-        # Simulating disconnecting the connector
-        response = controller.set_multiple_digital_outputs(1, 2, ['ON', 'ON'])
-
-        delay = random.randint(5, 300)
-        logger.info('Off Delay is: %d' % delay)
-        time.sleep(delay)
-
-
-        response = controller.set_multiple_digital_outputs(1, 2, ['OFF', 'OFF'])
-
-        delay = random.randint(5, 300)
-        logger.info('On Delay is: %d' % delay)
-        time.sleep(delay)
-        #----------------------------------------------------------------------#
+    main(parser.parse_args())
