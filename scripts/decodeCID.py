@@ -79,6 +79,7 @@ def getCID(device):
 
     with open(filename, 'r') as fid:
         data = fid.read()
+        data.rstrip('\n')
 
     return data
 
@@ -142,4 +143,9 @@ if __name__ == '__main__':
     CID.update(decodeCID(CID['raw']))
 
     logger.info('The CID is: %s' % CID['raw'])
-    logger.info('   Mfg ID: %#02x' % CID['mfg ID'])
+    logger.info('   Mfg ID: %0#4x' % CID['mfg ID'])
+    logger.info('   OEM ID/Application ID: %0#4x, %0#4x' % (CID['OEM ID'], CID['Application ID']))
+    logger.info('   Product Name: %s' % CID['Product Name'])
+    logger.info('   Product Revision: %s' % CID['Product Revision'])
+    logger.info('   Serial Number: %d' % CID['Serial Number'])
+    logger.info('   Mfg Date Code: %s' % CID['Mfg Date Code'])
