@@ -94,8 +94,8 @@ def decodeCID(data):
     # CRC7 Checksum:
 
     decoded_CID = {'mfg ID': int(data[0:2], base=16)}
-    decoded_CID['OEM ID'] = int(data[2:4])
-    decoded_CID['Application ID'] = int(data[4:6])
+    decoded_CID['OEM ID'] = int(data[2:4], base=16)
+    decoded_CID['Application ID'] = int(data[4:6], base=16)
     decoded_CID['Product Name'] = data[6:16].decode('hex')
     decoded_CID['Product Revision'] = str(int(data[16:17])) + '.' + str(int(data[17:18]))
     decoded_CID['Serial Number'] = int(data[18:26], base=16)
@@ -136,7 +136,7 @@ if __name__ == '__main__':
     setupLogger(args.level, args.filename)
 
     logger.info(
-        'Script started on: %s' % time.asctime(time.localtime(time.time()))
+        'Script started on: %s\n' % time.asctime(time.localtime(time.time()))
         )
 
     CID = {'raw':getCID(args.block_device_name)}
@@ -149,3 +149,7 @@ if __name__ == '__main__':
     logger.info('   Product Revision: %s' % CID['Product Revision'])
     logger.info('   Serial Number: %d' % CID['Serial Number'])
     logger.info('   Mfg Date Code: %s' % CID['Mfg Date Code'])
+
+    logger.info(
+        'Script stopped on: %s\n' % time.asctime(time.localtime(time.time()))
+        )
