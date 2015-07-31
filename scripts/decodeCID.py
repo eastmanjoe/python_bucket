@@ -92,12 +92,13 @@ def decodeCID(data):
     # Mfg Date Code:          0x0ec [BCD: 0 14/12]
     # CRC7 Checksum:
 
-    decoded_CID = {'mfg ID': data[0:2]}
-    decoded_CID['OEM ID/Application ID'] = data[2:6]
-    decoded_CID['Product Name'] = data[6:16]
-    decoded_CID['Product Revision'] = data[16:18]
-    decoded_CID['Serial Number'] = data[18:26]
-    decoded_CID['Mfg Date Code'] = data[27:30]
+    decoded_CID = {'mfg ID': int(data[0:2], base=16)}
+    decoded_CID['OEM ID'] = int(data[2:4])
+    decoded_CID['Application ID'] = int(data[4:6])
+    decoded_CID['Product Name'] = data[6:16].decode('hex')
+    decoded_CID['Product Revision'] = str(int(data[16:17])) + '.' + str(int(data[17:18]))
+    decoded_CID['Serial Number'] = int(data[18:26], base=16)
+    decoded_CID['Mfg Date Code'] = str(int(data[27:28], base=16)) + ' ' + str(int(data[28:29], base=16)) + '/' + str(int(data[29:30], base=16))
     decoded_CID['CRC7 Checksum'] = data[30:32]
 
     logger.debug(decoded_CID)
@@ -141,4 +142,4 @@ if __name__ == '__main__':
     CID.update(decodeCID(CID['raw']))
 
     logger.info('The CID is: %s' % CID['raw'])
-    # logger.info('   Mfg ID: %s')
+    logger.info('   Mfg ID: %#02x' % CID['mfg ID'])
