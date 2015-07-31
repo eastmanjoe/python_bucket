@@ -77,7 +77,7 @@ def signal_handler(signal, frame):
 def getCID(device):
     filename = '/sys/block/' + device + '/device/cid'
 
-    with open('filename', 'r') as fid:
+    with open(filename, 'r') as fid:
         data = fid.read()
 
     return data
@@ -94,11 +94,11 @@ def decodeCID(data):
 
     decoded_CID = {'mfg ID': data[0:2]}
     decoded_CID['OEM ID/Application ID'] = data[2:6]
-    decoded_CID['Product Name'] = data[6:17]
-    decoded_CID['Product Revision'] = data[17:19]
-    decoded_CID['Serial Number'] = data[19:28]
-    decoded_CID['Mfg Date Code'] = data[29:32]
-    decoded_CID['CRC7 Checksum'] = data[32:34]
+    decoded_CID['Product Name'] = data[6:16]
+    decoded_CID['Product Revision'] = data[16:18]
+    decoded_CID['Serial Number'] = data[18:26]
+    decoded_CID['Mfg Date Code'] = data[27:30]
+    decoded_CID['CRC7 Checksum'] = data[30:32]
 
     logger.debug(decoded_CID)
 
