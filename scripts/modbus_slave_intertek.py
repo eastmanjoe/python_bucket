@@ -13,15 +13,6 @@ import serial
 import serial.tools.list_ports
 
 #---------------------------------------------------------------------------#
-# # pymodbus
-# from pymodbus.server.async import StartSerialServer
-# from pymodbus.device import ModbusDeviceIdentification
-# from pymodbus.datastore import ModbusSequentialDataBlock
-# from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
-# from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer
-#---------------------------------------------------------------------------#
-
-#---------------------------------------------------------------------------#
 # modbus-tk
 import modbus_tk
 import modbus_tk.defines as cst
@@ -56,46 +47,14 @@ log.setLevel(logging.DEBUG)
 
 #---------------------------------------------------------------------------#
 def startModbusSlave():
-
-    #---------------------------------------------------------------------------#
-    # # pymodbus
-    # store = ModbusSlaveContext(
-    #     # di = ModbusSequentialDataBlock(0, [17]*100),
-    #     # co = ModbusSequentialDataBlock(0, [17]*100),
-    #     hr = ModbusSequentialDataBlock(mbAddr, [17]*100),
-    #     ir = ModbusSequentialDataBlock(mbAddr, [17]*100))
-    # context = ModbusServerContext(slaves=store, single=True)
-
-    # #---------------------------------------------------------------------------#
-    # # initialize the server information
-    # #---------------------------------------------------------------------------#
-    # # If you don't set this or any fields, they are defaulted to empty strings.
-    # #---------------------------------------------------------------------------#
-    # identity = ModbusDeviceIdentification()
-    # identity.VendorName  = 'Draker'
-    # identity.ProductCode = 'PM'
-    # identity.VendorUrl   = ''
-    # identity.ProductName = 'Pymodbus Server'
-    # identity.ModelName   = 'Pymodbus Server'
-    # identity.MajorMinorRevision = '1.0'
-
-    # #---------------------------------------------------------------------------#
-    # # run the server you want
-    # #---------------------------------------------------------------------------#
-    # # StartTcpServer(context, identity=identity, address=("localhost", 5020))
-    # #StartUdpServer(context, identity=identity, address=("localhost", 502))
-    # StartSerialServer(context, identity=identity, port=comPort, framer=ModbusRtuFramer)
-    # StartSerialServer(context, identity=identity, port=comPort, framer=ModbusRtuFramer)
-    # #StartSerialServer(context, identity=identity, port='/dev/pts/3', framer=ModbusAsciiFramer)
-    #---------------------------------------------------------------------------#
-
     #---------------------------------------------------------------------------#
     # modbus-tk
     try:
         # server_USB0 = modbus_rtu.RtuServer(serial.Serial(port="/dev/ttyUSB0", baudrate=9600, bytesize=8, parity='N', stopbits=1, xonxoff=0))
         # server_USB1 = modbus_rtu.RtuServer(serial.Serial(port="/dev/ttyUSB1", baudrate=9600, bytesize=8, parity='N', stopbits=1, xonxoff=0))
-        server_USB0 = modbus_rtu.RtuServer(serial.Serial(port="COM7", baudrate=9600, bytesize=8, parity='N', stopbits=1, xonxoff=0))
-        server_USB1 = modbus_rtu.RtuServer(serial.Serial(port="COM8", baudrate=9600, bytesize=8, parity='N', stopbits=1, xonxoff=0))
+        server_USB0 = modbus_rtu.RtuServer(serial.Serial(port="COM5", baudrate=9600, bytesize=8, parity='N', stopbits=1, xonxoff=0))
+        server_USB1 = modbus_rtu.RtuServer(serial.Serial(port="COM6", baudrate=9600, bytesize=8, parity='N', stopbits=1, xonxoff=0))
+        # server_USB2 = modbus_rtu.RtuServer(serial.Serial(port="COM19", baudrate=9600, bytesize=8, parity='N', stopbits=1, xonxoff=0))
 
         #Connect to the slave
         logger.info("running...")
@@ -104,6 +63,11 @@ def startModbusSlave():
         # Start Modbus Slave servers
         server_USB0.start()
         server_USB1.start()
+        # server_USB2.start()
+
+        server_USB0.set_verbose(True)
+        server_USB1.set_verbose(True)
+        # server_USB2.set_verbose(True)
 
         for mb_addr in range(11, 44):
             slave_USB0 = server_USB0.add_slave(mb_addr)
@@ -113,6 +77,10 @@ def startModbusSlave():
             slave_USB1 = server_USB1.add_slave(mb_addr)
             slave_USB1.add_block("0", cst.HOLDING_REGISTERS, 100, 10)
             slave_USB1.set_values("0", 100, [20, 21, 22, 23, 24, 25, 26, 27, 28, 29])
+
+            # slave_USB2 = server_USB2.add_slave(mb_addr)
+            # slave_USB2.add_block("0", cst.HOLDING_REGISTERS, 100, 10)
+            # slave_USB2.set_values("0", 100, [20, 21, 22, 23, 24, 25, 26, 27, 28, 29])
 
         while True:
             cmd = sys.stdin.readline()
@@ -125,6 +93,7 @@ def startModbusSlave():
     finally:
         server_USB0.stop()
         server_USB1.stop()
+        # server_USB2.stop()
     #---------------------------------------------------------------------------#
 #---------------------------------------------------------------------------#
 
