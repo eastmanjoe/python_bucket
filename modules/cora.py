@@ -8,7 +8,9 @@ Run Cora commands
 #import packages
 from argparse import ArgumentParser
 from threading import Thread, Event
-from subprocess import Popen, PIPE, STDOUT, STARTUPINFO, STARTF_USESHOWWINDOW
+# from subprocess import Popen, PIPE, STDOUT, STARTUPINFO, STARTF_USESHOWWINDOW
+import subprocess
+from logging.config import fileConfig
 
 import os
 import sys
@@ -16,50 +18,14 @@ import signal
 import logging
 import time
 import json
+import re
 
-
-#---------------------------------------------------------------------------#
-def setupLogger(loglevel, log_filename):
-
-    # assuming loglevel is bound to the string value obtained from the
-    # command line argument. Convert to upper case to allow the user to
-    # specify --log=DEBUG or --log=debug
-    loglevel = loglevel.upper()
-
-    numeric_level = getattr(logging, loglevel, None)
-    if not isinstance(numeric_level, int):
-        raise ValueError('Invalid log level: %s' % loglevel)
-
-    logger.setLevel(loglevel)
-
-    # configure logger
-    handler_stream_formatter = logging.Formatter('%(levelname)s: %(message)s')
-    handler_stream = logging.StreamHandler()
-    handler_stream.setLevel(loglevel)
-    handler_stream.setFormatter(handler_stream_formatter)
-    logger.addHandler(handler_stream)
-
-    if log_filename != '':
-        log_path = 'C:\\cygwin\\home\\jeastman\\python_bucket\\debug_logs\\'
-        # log_path = 'c:\\temp\\'
-        # log_path = '/home/jeastman/logs/'
-        handler_file = logging.FileHandler(log_path + log_filename)
-        # handler_file = logging.FileHandler(log_path + log_filename)
-        handler_file_formatter = logging.Formatter(
-            '%(asctime)s %(levelname)s: %(message)s')
-        handler_file.setFormatter(handler_file_formatter)
-        handler_file.setLevel(loglevel)
-        logger.addHandler(handler_file)
-
-    logger.info('Log Level is: %s' % (loglevel))
-    logger.info('Log Filename is: %s' % (log_filename))
-
+__version__ = '0.0.1'
 #---------------------------------------------------------------------------#
 def signal_handler(signal, frame):
     print ('You pressed Ctrl+C')
     logger.info('Script Stopped on: %s' % time.asctime(
         time.localtime(time.time())))
-    loggernet.stop()
     sys.exit(0)
 
 #---------------------------------------------------------------------------#
@@ -70,94 +36,121 @@ class Cora(Thread):
     '''
 
     def __init__(self, server_ip, username, password, server_port=6789):
-        super(Cora, self).__init__()
-        self.name = 'Cora'
-        self.threadID = 2
-        self.stoprequest = Event()
         self.server_ip = server_ip
         self.username = username
         self.password = password
-        self.server_port=server_port
+        self.server_port = server_port
 
-        logger.info('starting cmd window')
+        cora_connect = 'connect ' + server_ip + ' '
+        cora_connect += '--name="' + username + '" '
+        cora_connect += '--password="' + password + '" '
+        cora_connect += '--server-port=' + str(server_port)
+        cora_connect += ';'
 
-        # startupinfo = STARTUPINFO()
-        # startupinfo.dwFlags |= STARTF_USESHOWWINDOW
-
-        try:
-            pass
-            self.cterm = Popen(
-            'cora', stdin=PIPE, stdout=PIPE, stderr=None,
-            universal_newlines=True)
-
-            logger.debug('Startup: {}'.format(self.cterm.stdout.readline()))
-            self.cterm.stdout.flush()
-
-        except WindowsError:
-            logger.error('cora command not found')
-            sys.exit(0)
-
-
-    def run(self):
-        logger.info('connecting to {} with {}:{}'.format(
-            self.server_ip, self.username, self.password
-            )
-        )
-
-        if self.cterm.poll() == None:
-            cmd = 'connect ' + self.server_ip
-
-            if self.username != '':
-                cmd += ' --name=' + self.username + ' '
-                cmd += ' --password=' + self.password + ' '
-
-            if self.server_port != 6789:
-                cmd += '--server-port=' + self.server_port
-
-            cmd += ';'
-
-            self.cterm.stdin.write(cmd)
-
-            cora_response = self.cterm.stdout.read()
-            self.cterm.stdout.flush()
-            logger.debug('Connect Response: {}'.format(cora_response))
-
-            if '+connect' in cora_response:
-                logger.info('connected to LoggerNet server: {}'.format(
-                    self.server_ip))
-            else:
-                logger.error('{}'.format(cora_response))
-        else:
-            logger.error(
-                'cannot connect to {} since cora is not running'.format(
-                self.server_ip))
-            stop()
-
-
-    def stop(self, timeout=None):
-        if self.cterm.poll() == None:
-            self.cterm.stdin.write('exit;')
-            # cora_response = self.cterm.stdin.write('exit;')
-            self.cterm.terminate()
-
-        self.stoprequest.set()
-        super(Cora, self).join(timeout)
-
-        logger.info('stopping cora')
+        self.cora = ['cora --echo=on --input={', cora_connect, '','}']
 
     def list_stations(self):
 
-        cmd += 'list-stations;'
-        cmd += '}'
+        station_list = []
+        station_name = re.compile(r'\{\{(?P<station_name>.*)\}\s+\d+\}')
+
+        self.cora[2] += 'list-stations;'
+
+        cora_output = subprocess.check_output(' '.join(self.cora))
+        # logger.debug('{}'.format(cora_output))
+
+        if 'unsupported message' in cora_output:
+            logger.error('"list-stations" command not supported by LoggerNet server')
+            return []
+
+        elif 'invalid security' in cora_output:
+            logger.error('Server security prevented this command from executing.')
+            return []
+
+        elif 'orphaned session' in cora_output:
+            logger.error('The connection to the server was lost while this command was executing.')
+            return []
+
+        elif 'connection lost' in cora_output:
+            logger.error('The connection to the server was lost while this command was executing.')
+            return []
+
+        else:
+            for line in cora_output.split('\n'):
+                # logger.debug('{}'.format(line.strip()))
+                sn_match =  station_name.match(line.strip())
+                if sn_match:
+                    station_list.append(sn_match.group('station_name'))
+
+            return station_list
+
+    def list_files(self, station_name):
+        regex = re.compile(r"^list-files \{(.*)\};")
+        error = re.compile(r"-list-files,(?P<error_message>.+)", re.MULTILINE)
+        cpu_file = re.compile(r"^\{CPU:\w.+")
+
+        file_list = {}
+
+        self.cora[2] += 'list-files ' + station_name + ';'
+
+        cora_output = subprocess.check_output(' '.join(self.cora))
+
+        logger.debug('{}'.format(cora_output))
+
+        error_str = error.search(cora_output)
+
+        if error_str:
+            if 'Expected the device name' == error_str.group('error_message').strip():
+                logger.error('The name of the device is expected as the first argument.')
+
+            elif 'unknown' == error_str.group('error_message').strip():
+                logger.error('The server sent a response code that corascript is unable to recognise')
+
+            elif 'session failure' == error_str.group('error_message').strip():
+                logger.error('The server connection was lost while the transaction was executing.')
+
+            elif 'invalid device name' == error_str.group('error_message').strip():
+                logger.error("The device name specified does not exist in the server's network map.")
+
+            elif 'blocked by server' == error_str.group('error_message').strip():
+                logger.error('Server security prevented the command from executing.')
+
+            elif 'unsupported' == error_str.group('error_message').strip():
+                logger.error('The server or the specified device does not support the command.')
+
+            elif 'blocked by logger' == error_str.group('error_message').strip():
+                logger.error('The security code setting for the specified device is not valid.')
+
+            elif 'communication disabled' == error_str.group('error_message').strip():
+                logger.info('Communication with the datalogger is disabled.')
+
+            elif 'communication failed' == error_str.group('error_message').strip():
+                logger.error('Communication with the datalogger failed.')
+
+            return error_str.group('error_message').strip()
+        else:
+            for line in cora_output.split('\n'):
+                line = line.strip()
+
+                if re.match(r"^\{CPU:\w.+", line):
+                    file_info = line.split(' ')
+
+                    file_list['Filename'] = file_info[0]
+
+                    for parameter in file_info[1:].split('='):
+                        file_list[parameter[0]] = parameter[1]
+
+                # logger.info('{}'.format(file_list))
+
+            return file_list
 
     def network_map_xml(self):
 
-        cmd += 'make-xml-network-map --format=xml' + ';'
-        cmd += '}'
+        cmd = 'make-xml-network-map --format=xml;'
 
     def get_data_fill_days(self, station_name):
-        cmd += 'get-value ' + station_name + '.Status.DataFillDays(1);'
-        cmd += '}'
+        self.cora[2] = 'get-value ' + station_name + '.Status.DataFillDays(1);'
+
 
     def list_devices(self):
         '''
@@ -207,39 +200,56 @@ class Cora(Thread):
         # outFile = open('LoggerNet_' + self.server_ip + '_Settings.xml', 'w')
         # doc.write(outFile)
 
+    def get_program_stats(self, station_name):
+        cmd = 'get-program-stats ' + station_name + ';'
+
 
 #---------------------------------------------------------------------------#
 if __name__ == '__main__':
 
+    loggernet_servers = {
+        "localhost": "localhost", "LN1": "98.129.42.26", "LN2": "98.129.42.29",
+        "LN3": "98.129.42.31", "LN4": "67.192.199.229", "LN5": "67.192.199.230",
+        "LN6": "67.192.199.228", "LN7": "98.129.111.74", "LN8": "67.192.161.134",
+        "LN9": "67.192.161.135", "LN10": "104.130.151.188", "LN11": "104.197.108.210",
+        "all": "all servers"
+        }
+
+    station = {}
+
     parser = ArgumentParser()
-    parser.add_argument('server_ip', help='ip address of the LoggerNet server')
     parser.add_argument(
-        '--username', help='username for LoggerNet server', default=''
+        'server_ip', help='ip address of the LoggerNet server', default=''
         )
     parser.add_argument(
-        '--password', help='password for LoggerNet server', default=''
+        '--username', help='username for LoggerNet server', default='Joe'
         )
     parser.add_argument(
-        '-l','--level',
-        help='defines the log level to be dispayed to the screen',
-        default='info'
+        '--password', help='password for LoggerNet server', default='w4LdL4fe'
         )
     parser.add_argument(
-        '-f','--filename', help='defines the filename of the debugs log',
-        default=''
+        '-v', '--version', action='version',version='%(prog)s ' + __version__
         )
     args = parser.parse_args()
 
     #register Ctrl-C signal handler
     signal.signal(signal.SIGINT, signal_handler)
 
-    logger = logging.getLogger('logger')
-    setupLogger(args.level, args.filename)
+    fileConfig('cora.ini')
+    logger = logging.getLogger('cora')
 
     loggernet = Cora(args.server_ip, args.username, args.password)
-    loggernet.start()
-    # loggernet.list_devices()
-    loggernet.stop()
+    # station_list = loggernet.list_stations()
+    # logger.info('{}'.format(station_list))
 
+    # for station_name in station_list:
+    #     station[station_name] = {}
+    #     station[station_name]['list-files'] = loggernet.list_files(station_name)
 
-    # list_devices(args.server_ip, args.username, args.password)
+    # station_name = 'draker_22-north'
+    station_name = 'swinerton_water-treatment'
+    # station_name = 'Unisolar_hunter-panels'
+    station[station_name] = {}
+    station[station_name]['list-files'] = loggernet.list_files(station_name)
+
+    logger.info('{}'.format(station))
