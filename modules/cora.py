@@ -473,13 +473,13 @@ if __name__ == '__main__':
 
     parser = ArgumentParser()
     parser.add_argument(
-        '--server_ip', help='ip address of the LoggerNet server', default='104.130.151.188'
+        '--server_ip', help='ip address of the LoggerNet server', default=''
         )
     parser.add_argument(
-        '--username', help='username for LoggerNet server', default='Joe'
+        '--username', help='username for LoggerNet server', default=''
         )
     parser.add_argument(
-        '--password', help='password for LoggerNet server', default='w4LdL4fe'
+        '--password', help='password for LoggerNet server', default=''
         )
     parser.add_argument(
         '-v', '--version', action='version',version='%(prog)s ' + __version__
@@ -518,7 +518,7 @@ if __name__ == '__main__':
     # station_name = 'swinerton_water-treatment'
     # station_name = 'Unisolar_hunter-panels'
     # station_name = 's3815_605-fenmar_das-1'
-    station_name = 's3811_port-authority-harrison_das-1'
+    # station_name = 's3811_port-authority-harrison_das-1'
     # station_name = 's3698_vandenberg-afb-bld-8314_das-1'
     # station[station_name] = {}
     # station[station_name]['list-files'] = loggernet.listFiles(station_name)
@@ -526,20 +526,20 @@ if __name__ == '__main__':
     # logger.info('{}'.format(station))
 
     # test for listDevices
-    # devices = loggernet.listDevices()
-    # logger.info('{}'.format(devices))
+    devices = loggernet.listDevices()
+    logger.info('{}'.format(devices))
 
     # test for listTables
-    table_list = loggernet.listTables(station_name)
-    logger.info('{}'.format(table_list))
-    try:
-        table_list.remove('Public')
-    except ValueError:
-        raise
-    finally:
-        logger.info('{}'.format(table_list))
+    # table_list = loggernet.listTables(station_name)
+    # logger.info('{}'.format(table_list))
+    # try:
+    #     table_list.remove('Public')
+    # except ValueError:
+    #     raise
+    # finally:
+    #     logger.info('{}'.format(table_list))
 
 
-    # test for getValue
-    logger.info('{}'.format(loggernet.getValue(station_name, '.Status.DataTableName(' + str(1) + ')')))
-    logger.info('{}'.format(loggernet.getValue(station_name, '.Status.DataFillDays(' + str(1) + ')')))
+    # # test for getValue
+    # logger.info('{}'.format(loggernet.getValue(station_name, '.Status.DataTableName(' + str(1) + ')')))
+    # logger.info('{}'.format(loggernet.getValue(station_name, '.Status.DataFillDays(' + str(1) + ')')))
