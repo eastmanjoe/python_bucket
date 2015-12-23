@@ -313,7 +313,7 @@ class Cora():
     def listTables(self, station_name):
         table_list = []
 
-        cora_output = self.executeCora('list-tables ' + station_name + ';')
+        cora_output = self.executeCora('list-tables {' + station_name + '};')
 
         logger.debug('cora_output is: {}'.format(cora_output))
 
@@ -349,7 +349,7 @@ class Cora():
 
 
     def getValue(self, station_name, value):
-        cora_output = self.executeCora('get-value ' + station_name + value + ';')
+        cora_output = self.executeCora('get-value {' + station_name + value + '};')
 
         if cora_output not in dict.keys(CoraError.FAILURES):
             cora_output = re.sub(r'\r', '', cora_output)
@@ -371,7 +371,7 @@ class Cora():
 
     def getProgramStats(self, station_name):
         # list of cora command to execute
-        cora_cmd = 'get-program-stats ' + station_name + ';'
+        cora_cmd = 'get-program-stats {' + station_name + '};'
 
         # write the cora commands to a file to make executing them easier
         self.writeCoraFile(cora_cmd)
