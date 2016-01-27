@@ -138,4 +138,8 @@ if __name__ == '__main__':
             days_add(from_date, add_days),
             days_delta(from_date, days_add(from_date, add_days), business=True)
     )
-
+    print 'The number of Business days between {} and {} is {}'.format(
+            from_date,
+            days_sub(from_date, add_days),
+            days_delta(from_date, days_add(from_date, add_days), business=True)
+    )
