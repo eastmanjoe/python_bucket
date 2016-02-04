@@ -103,7 +103,7 @@ class CoraError(Exception):
 
 
 #---------------------------------------------------------------------------#
-class Cora():
+class coraUtil():
     '''
     a thread that launches the cora_cmd service and
     connect to the LoggerNet server specifiec
@@ -502,7 +502,7 @@ if __name__ == '__main__':
     #         loggernet.deleteAccount('Joe')
 
 
-    loggernet = Cora(args.server_ip, args.username, args.password)
+    loggernet = coraUtil(args.server_ip, args.username, args.password)
     # station_list = loggernet.listStations()
     # logger.info('{}'.format(station_list))
 
