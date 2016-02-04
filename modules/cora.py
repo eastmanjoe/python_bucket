@@ -45,7 +45,7 @@ class Draker():
         "LN8": "67.192.161.134",
         "LN9": "67.192.161.135",
         "LN10": "104.130.151.188",
-        "LN11": "104.197.108.210",
+        "LL_Test": "104.197.108.210",
         "all": "all servers"
         }
 
@@ -55,7 +55,7 @@ class CoraError(Exception):
 
     FAILURES = {
         'unsupported message': 'command not supported by LoggerNet server',
-        'invalid security': 'Server security prevented this command from executing.',
+        'invalid security': 'Server security prevented this command/transaction from executing.',
         'orphaned session': 'The connection to the server was lost while this command was executing.',
         'connection lost': 'The connection to the server was lost while this command was executing.',
         'Expected the device name': 'The name of the device is expected as the first argument.',
@@ -63,7 +63,7 @@ class CoraError(Exception):
         'session failure': 'The server connection was lost while the transaction was executing.',
         'invalid device name': "The device name specified does not exist in the server's network map.",
         'blocked by server': 'Server security prevented the command from executing.',
-        'unsupported': 'The server or the specified device does not support the command.',
+        'unsupported': 'The server or the specified device does not support the command/transaction.',
         'blocked by logger': 'The security code setting for the specified device is not valid.',
         'communication disabled': 'Communication with the datalogger is disabled.',
         'communication failed': 'Communication with the datalogger failed.',
@@ -74,14 +74,12 @@ class CoraError(Exception):
         'unknown failure': 'The server sent a failure code that was not recognised by corascript.',
         'insufficient access to add accounts': 'Server security blocked this command from executing.',
         'connection failed': 'The server connection was lost while this command was executing.',
-        'unsupported': 'One or more required transactions are not supported by the server.',
         'security interface is locked': 'Another client has locked the security interface.',
         'invalid account name': 'An invalid (or already existing) account name was specified.',
         'account is in use ': 'The command referred to an account that is currently being used.',
         'insufficient access to delete accounts': 'The command failed because of server security.',
         'Broker name expected first': 'The name of the data broker was expected as the first argument.',
         'invalid broker specified': 'There is no data broker that has the specified name.',
-        'invalid security': 'Server security blocked this transaction from executing.',
         'unsupported message type': 'The server does not support this command.',
         'exception': 'The server sent a response code that corascript was unable to recognise.',
         'Expected the column identifier': 'The column identifier was expected as the first argument.',
