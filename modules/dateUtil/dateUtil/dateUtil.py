@@ -113,6 +113,20 @@ def days_delta(beginning_date, ending_date, business=False):
         return int(delta_days.days)
 
 
+def week_number(calender_date):
+    """
+    Determines the week number for a specific date
+
+    :param calender_date: starting date (YYYY-MM-DD)
+    :type calender_date: str
+    """
+    year, month, day = calender_date.split('-')
+
+    number = date(year=int(year), month=int(month), day=int(day)).isocalendar()[1]
+
+    return number
+
+
 # ---------------------------------------------------------------------------
 if __name__ == '__main__':
 
@@ -143,3 +157,5 @@ if __name__ == '__main__':
             days_sub(from_date, add_days),
             days_delta(from_date, days_add(from_date, add_days), business=True)
     )
+
+    print 'The week number for 2011-08-22 is {}'.format(week_number('2011-08-22'))
