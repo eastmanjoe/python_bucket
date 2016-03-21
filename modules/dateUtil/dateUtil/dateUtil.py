@@ -129,7 +129,7 @@ def week_number(calender_date):
 
 def seconds_since_epoch(current_date, epoch='1970-01-01 00:00:00'):
     """
-    Determine the number of seconds since 1990 from a specified date
+    Determine the number of seconds since the epoch from a specified date
 
     :param current_date: YYYY-MM-DD HH:MM:SS
     :return:
