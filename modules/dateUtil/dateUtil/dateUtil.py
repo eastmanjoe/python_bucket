@@ -7,7 +7,7 @@ This module program performs common functions with dates
 """
 
 # ---------------------------------------------------------------------------
-from datetime import timedelta, date
+from datetime import timedelta, date, datetime
 
 __version__ = '1.0.0'
 
@@ -127,6 +127,34 @@ def week_number(calender_date):
     return number
 
 
+def seconds_since_epoch(current_date, epoch='1970-01-01 00:00:00'):
+    """
+    Determine the number of seconds since 1990 from a specified date
+
+    :param current_date: YYYY-MM-DD HH:MM:SS
+    :return:
+    """
+    epoch = datetime.strptime(epoch, "%Y-%m-%d %H:%M:%S")
+    epoch_current_date = datetime.strptime(current_date, "%Y-%m-%d %H:%M:%S")
+
+    epoch_diff = epoch_current_date - epoch
+
+    return epoch_diff.total_seconds()
+
+
+def epoch_to_date(seconds_since_epoch, epoch='1970-01-01 00:00:00'):
+    """
+    Convert seconds since epoch to a date
+
+    :param seconds_since_epoch:
+    :param epoch: YYYY-MM-DD HH:MM:SS
+    :return:
+    """
+    epoch = datetime.strptime(epoch, "%Y-%m-%d %H:%M:%S")
+
+    return epoch + timedelta(seconds=seconds_since_epoch)
+
+
 # ---------------------------------------------------------------------------
 if __name__ == '__main__':
 
@@ -159,3 +187,11 @@ if __name__ == '__main__':
     )
 
     print 'The week number for 2011-08-22 is {}'.format(week_number('2011-08-22'))
+
+    print 'The CSI epoch time for {} is {}'.format(
+        '2016-03-14 18:01:30', seconds_since_epoch('2016-03-14 18:01:30', epoch='1990-01-01 00:00:00')
+    )
+    print 'Does 826826490824279000 equal {}'.format(
+        seconds_since_epoch('2016-03-14 18:01:30', epoch='1990-01-01 00:00:00')
+    )
+    print 'Is {} equal to {}'.format('2016-03-14 18:01:30', epoch_to_date(826826490, epoch='1990-01-01 00:00:00'))
