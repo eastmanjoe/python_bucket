@@ -113,18 +113,47 @@ def days_delta(beginning_date, ending_date, business=False):
         return int(delta_days.days)
 
 
-def week_number(calender_date):
+def date_to_week_number(calender_date):
     """
     Determines the week number for a specific date
 
     :param calender_date: starting date (YYYY-MM-DD)
     :type calender_date: str
+    :return:
     """
-    year, month, day = calender_date.split('-')
+    # year, month, day = calender_date.split('-')
+    year, month, day = datetime.strptime(current_date, "%Y-%m-%d")
 
     number = date(year=int(year), month=int(month), day=int(day)).isocalendar()[1]
 
     return number
+
+
+def week_number_to_date(year, week_number):
+    """
+    Determines the range of dates for a specific week number.  The start of
+
+    :param year: the year the week number is in
+    :type year: int
+    :param week_number: the week number to conver
+    :type week_number: int
+    :return:
+    """
+    week_number = 0
+    week_list = []
+
+    start_of_week_date = date(year=year, month=01, day=01)
+
+    # TODO: determine the first Thursday of the year
+
+
+    # TODO: create list of tuples: (week_number, start_of_week_date)
+
+
+    # TODO: loop through list to determine the index the week_number matches
+
+    # TODO: calculate the end of the week date
+    return start_of_week, end_of_week
 
 
 def seconds_since_epoch(current_date, epoch='1970-01-01 00:00:00'):
