@@ -113,30 +113,35 @@ class thermistor:
 
 if __name__ == '__main__':
 
-    t1 = thermistor(9.376e-4, 2.208e-4, 1.276e-7)
-    t2 = thermistor(.0009376, .0002208, .0000001276)
+    # Omega 44008
+    # t1 = thermistor(9.376e-4, 2.208e-4, 1.276e-7)
+    # t2 = thermistor(.0009376, .0002208, .0000001276)
+
+    # CSI 109
+    t3 = thermistor(1.129241e-3, 2.341077e-4, 8.775468e-8)
     # thermistor_data = { 'temp_c_low': -40, 'temp_r_low': 884600,
     #                     'temp_c_mid': 25, 'temp_r_mid': 30000,
     #                     'temp_c_high': 150, 'temp_r_high': 550200}
 
 
     # A = 9.26e-04, B = 2.22e-04, C = 1.23e-07
-    thermistor_data = { 'temp_c_low': 10, 'temp_r_low': 58750,
-                        'temp_c_mid': 25, 'temp_r_mid': 30000,
-                        'temp_c_high': 40, 'temp_r_high': 16150}
+    # thermistor_data = { 'temp_c_low': 10, 'temp_r_low': 58750,
+    #                     'temp_c_mid': 25, 'temp_r_mid': 30000,
+    #                     'temp_c_high': 40, 'temp_r_high': 16150}
 
-    thermistor_steinhart_constants = t1.calcSteinhartHartConstants(thermistor_data)
+    # thermistor_steinhart_constants = t1.calcSteinhartHartConstants(thermistor_data)
 
-    print 'The Steinhart-Hart constants are: ', thermistor_steinhart_constants
+    # print 'The Steinhart-Hart constants are: ', thermistor_steinhart_constants
 
-    calc_temp = t1.calcTemp(30000)
+    # calc_temp = t1.calcTemp(30000)
     # calc_temp = t2.calcTemp(30000)
+    calc_temp = t3.calcTemp(43718.22)
     print 'Temperature for Omega Thermistor @ 30kOhms is 25 Deg C, Calculated Temp is:', calc_temp
 
-    calc_res = t1.calcResistance(25)
+    # calc_res = t1.calcResistance(25)
     # calc_res = t2.calcResistance(25)
-    print 'Resistance for Omega Thermistor @ 25 Deg C is 30k, Calculated Res is:', calc_res
+    # print 'Resistance for Omega Thermistor @ 25 Deg C is 30k, Calculated Res is:', calc_res
 
-    brige_temp = t1.calcThermistorBridge(2.31858, 5, 24900)
+    # brige_temp = t1.calcThermistorBridge(2.31858, 5, 24900)
     # brige_temp = t2.calcThermistorBridge(2.31858, 5, 24900)
-    print 'Expected Temperature: 32.91281, Calculated Temperature is:', brige_temp
+    # print 'Expected Temperature: 32.91281, Calculated Temperature is:', brige_temp
