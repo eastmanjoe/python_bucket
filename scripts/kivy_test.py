@@ -35,7 +35,9 @@ class MyApp(App):
         log.level = logging.DEBUG
         log.addHandler(MyLabelHandler(label, logging.DEBUG))
 
-        thread.start_new(my_thread, (log,))
+        # thread.start_new(my_thread, (log,))
+
+        # my_thread(log)
 
         return label
 
