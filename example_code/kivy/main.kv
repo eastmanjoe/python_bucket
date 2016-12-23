@@ -1,0 +1,44 @@
+ScreenManagement:
+    SelectScreen:
+    ProgressScreen:
+
+<SelectScreen>:
+    name: 'selection'
+    BoxLayout:
+        orientation: 'vertical'
+
+        ModelSpinner:
+            size_hint: (.25, .5)
+            text: 'Model Number'
+            on_select:
+
+        BoxLayout:
+            orientation: 'horizontal'
+            ContinueButton:
+                size_hint: (1, .5)
+                text: 'Continue'
+                on_press: root.manager.current = 'progress'
+            Button:
+                size_hint: (1, .5)
+                text: 'Quit'
+                on_press: app.Exit()
+
+<ProgressScreen>:
+    name: 'progress'
+    BoxLayout:
+        orientation: 'vertical'
+
+        TextInput:
+            size_hint: (1, 10)
+
+        BoxLayout:
+            orientation: 'horizontal'
+            Button:
+                size_hint: (1, 1)
+                text: 'Continue'
+                on_press: root.manager.current = 'progress'
+            Button:
+                size_hint: (1, 1)
+                text: 'Quit'
+                on_press: app.Exit()
+
