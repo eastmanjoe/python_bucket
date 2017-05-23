@@ -103,21 +103,21 @@ def start_modbus_slave(modbus_ports_and_slaves_per_port, com_ports, verbose_enab
 
             for modbus_slaves in range(0, num_slaves_per_port):
                 exec ("server_%d_slave_%d = server_%d.add_slave(11 + %d)" %
-                    (
-                        modbus_ports, modbus_slaves, modbus_ports, modbus_slaves
-                    )
-                )
+                      (
+                          modbus_ports, modbus_slaves, modbus_ports, modbus_slaves
+                      )
+                      )
                 exec ("server_%d_slave_%d.add_block('0', modbus_defines.HOLDING_REGISTERS, 100, 10)" %
-                    (
-                        modbus_ports, modbus_slaves
-                    )
-                )
+                      (
+                          modbus_ports, modbus_slaves
+                      )
+                      )
 
                 holding_register_values = range(10 + (10 * modbus_slaves), 20 + (10 * modbus_slaves))
 
                 exec ("server_%d_slave_%d.set_values('0', 100, [%s])" %
-                    (modbus_ports, modbus_slaves, ','.join(map(str, holding_register_values)))
-                )
+                      (modbus_ports, modbus_slaves, ','.join(map(str, holding_register_values)))
+                      )
 
         # server_0.set_verbose(True)
         # server_1.set_verbose(True)
