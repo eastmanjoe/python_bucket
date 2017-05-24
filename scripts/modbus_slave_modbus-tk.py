@@ -108,13 +108,14 @@ def start_modbus_slave(modbus_ports_and_slaves_per_port, com_ports, verbose_enab
             else:
                 logger.info('Modbus-tk verbose disabled')
 
+            mb_server_slave.append([])
+
             for modbus_slaves in range(0, num_slaves_per_port):
                 holding_register_values = list(range(10 + (10 * modbus_slaves), 20 + (10 * modbus_slaves)))
 
-                mb_server_slave.append(mb_server[modbus_ports].add_slave(1 + modbus_slaves))
-                mb_server_slave[modbus_slaves].add_block('0', modbus_defines.HOLDING_REGISTERS, 1, 40000)
-                # mb_server_slave[modbus_slaves].set_values('0', 100, ','.join(map(str, holding_register_values)))
-                mb_server_slave[modbus_slaves].set_values('0', 100, ','.join([str(hreg) for hreg in holding_register_values]))
+                mb_server_slave[modbus_ports].append(mb_server[modbus_ports].add_slave(1 + modbus_slaves))
+                mb_server_slave[modbus_ports][modbus_slaves].add_block('0', modbus_defines.HOLDING_REGISTERS, 1, 40000)
+                mb_server_slave[modbus_ports][modbus_slaves].set_values('0', 100, ','.join([str(hreg) for hreg in holding_register_values]))
 
         # Connect to the slave
         logger.info('All slave(s) running...')
