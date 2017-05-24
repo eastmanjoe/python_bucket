@@ -116,7 +116,7 @@ def start_modbus_slave(modbus_ports_and_slaves_per_port, com_ports, verbose_enab
                 ]
 
                 mb_server_slave[modbus_ports].append(mb_server[modbus_ports].add_slave(1 + modbus_slaves))
-                mb_server_slave[modbus_ports][modbus_slaves].add_block('0', modbus_defines.HOLDING_REGISTERS, 1, 40000)
+                mb_server_slave[modbus_ports][modbus_slaves].add_block('0', modbus_defines.HOLDING_REGISTERS, 1, 50000)
                 mb_server_slave[modbus_ports][modbus_slaves].set_values('0', 100, ','.join(holding_register_values))
 
         # Connect to the slave
