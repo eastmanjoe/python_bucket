@@ -24,6 +24,7 @@ This program starts two modbus slaves for the DAQ code to query.
 import time
 import sys
 import argparse
+import serial
 
 # ---------------------------------------------------------------------------#
 # modbus-tk
@@ -75,52 +76,45 @@ def start_modbus_slave(modbus_ports_and_slaves_per_port, com_ports, verbose_enab
     num_modbus_ports = int(modbus_ports_and_slaves_per_port[0])
     num_slaves_per_port = int(modbus_ports_and_slaves_per_port[1])
 
+    mb_server = []
+    mb_server_slave = []
+
     # modbus-tk
     logger.info('Number of Modbus Slave Ports is %d' % num_modbus_ports)
     logger.info('Number of Modbus Slaves per Port is %d' % num_slaves_per_port)
 
-    for x in range(0, num_modbus_ports):
-        logger.info('COM Port #%d is: %s' % (x + 1, com_ports[x]))
-
     try:
         for modbus_ports in range(0, num_modbus_ports):
-            exec (
-                'server_%d = modbus_rtu.RtuServer('
-                'serial.Serial(port="%s", baudrate=9600, bytesize=8, parity="N", stopbits=1, xonxoff=0)'
-                ')' %
-                (
-                    modbus_ports, str(com_ports[modbus_ports])
+            logger.info('COM Port #%d is: %s' % (modbus_ports + 1, com_ports[modbus_ports]))
+
+            mb_server.append(
+                modbus_rtu.RtuServer(
+                    serial.Serial(
+                        port=str(com_ports[modbus_ports]),
+                        baudrate=9600,
+                        bytesize=8,
+                        parity="N",
+                        stopbits=1,
+                        xonxoff=False
+                    )
                 )
             )
-            exec ('server_%d.start()' % modbus_ports)
-            exec ("server_%d.set_verbose(%s)" % (modbus_ports, verbose_enabled))
+            mb_server[modbus_ports].start()
+            mb_server[modbus_ports].set_verbose(verbose_enabled)
 
             if verbose_enabled:
                 logger.info('Modbus-tk verbose enabled')
-                # exec("server_%d.set_verbose(True)" % (modbus_ports))
+                mb_server[modbus_ports].set_verbose(True)
             else:
                 logger.info('Modbus-tk verbose disabled')
 
             for modbus_slaves in range(0, num_slaves_per_port):
-                exec ("server_%d_slave_%d = server_%d.add_slave(11 + %d)" %
-                      (
-                          modbus_ports, modbus_slaves, modbus_ports, modbus_slaves
-                      )
-                      )
-                exec ("server_%d_slave_%d.add_block('0', modbus_defines.HOLDING_REGISTERS, 100, 10)" %
-                      (
-                          modbus_ports, modbus_slaves
-                      )
-                      )
+                holding_register_values = list(range(10 + (10 * modbus_slaves), 20 + (10 * modbus_slaves)))
 
-                holding_register_values = range(10 + (10 * modbus_slaves), 20 + (10 * modbus_slaves))
-
-                exec ("server_%d_slave_%d.set_values('0', 100, [%s])" %
-                      (modbus_ports, modbus_slaves, ','.join(map(str, holding_register_values)))
-                      )
-
-        # server_0.set_verbose(True)
-        # server_1.set_verbose(True)
+                mb_server_slave.append(mb_server[modbus_ports].add_slave(11 + modbus_slaves))
+                mb_server_slave[modbus_slaves].add_block('0', modbus_defines.HOLDING_REGISTERS, 1, 40000)
+                # mb_server_slave[modbus_slaves].set_values('0', 100, ','.join(map(str, holding_register_values)))
+                mb_server_slave[modbus_slaves].set_values('0', 100, ','.join([str(hreg) for hreg in holding_register_values]))
 
         # Connect to the slave
         logger.info('All slave(s) running...')
@@ -131,12 +125,13 @@ def start_modbus_slave(modbus_ports_and_slaves_per_port, com_ports, verbose_enab
             cmd_args = cmd.split(' ')
 
             if (cmd.find('quit') == 0) or (cmd.find('q') == 0):
-                sys.stdout.write('bye-bye\n')
+                # sys.stdout.write('bye-bye\n')
+                logger.info('bye-bye')
                 break
 
     finally:
         for modbus_ports in range(0, num_modbus_ports):
-            exec ('server_%d.stop()' % modbus_ports)
+            mb_server[modbus_ports].stop()
 
 
 # ---------------------------------------------------------------------------#
@@ -159,12 +154,10 @@ if __name__ == '__main__':
     # start-up logger
     logger = modbus_tk.utils.create_logger(name='console', level=args.level.upper(),
                                            record_format="%(levelname)s: %(message)s")
-    # logger = logging.getLogger('modbus_log')
 
-    # setupLogger('debug', 'modbus_log.log')
     setup_logger(args.level, args.filename)
 
-    logger.info('Script started on: %s' % time.asctime(time.localtime(time.time())))
+    logger.info('Script started on: {}'.format(time.asctime(time.localtime(time.time()))))
 
     # logger.info('Modbus-tk verbose set to %s' % args.verbose)
     start_modbus_slave(args.num.split(':'), args.ports.split(':'), args.verbose)
