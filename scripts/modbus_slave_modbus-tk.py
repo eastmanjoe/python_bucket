@@ -108,7 +108,7 @@ def start_modbus_slave(modbus_ports_and_slaves_per_port, com_ports, verbose_enab
     num_slaves_per_port = int(modbus_ports_and_slaves_per_port[1])
 
     holding_register_values = [
-        str(hreg) for hreg in range(1 + (10000 * num_slaves_per_port), 10000 + (10000 * num_slaves_per_port))
+        hreg for hreg in range(1, 50001)
     ]
 
     mb_server = []
@@ -155,7 +155,7 @@ def start_modbus_slave(modbus_ports_and_slaves_per_port, com_ports, verbose_enab
                 logger.debug(
                     'Added values {} to {} to modbus slave #{}'.format(
                         str(mb_slave.get_values('0', 1, 1)[0]),
-                        str(mb_slave.get_values('0', 9999, 1)[0]),
+                        str(mb_slave.get_values('0', 50000, 1)[0]),
                         1 + modbus_slaves
                     )
                 )
