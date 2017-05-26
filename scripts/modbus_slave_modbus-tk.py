@@ -158,8 +158,8 @@ def start_modbus_slave(modbus_ports_and_slaves_per_port, com_ports, verbose_enab
 
                 logger.debug(
                     'Added values {} to {} to modbus slave #{}'.format(
-                        str(mb_slave.get_values('0', 1, 1)[0]),
-                        str(mb_slave.get_values('0', 50000, 1)[0]),
+                        mb_slave.get_values('0', 1, 1)[0],
+                        mb_slave.get_values('0', holding_register_values, 1)[0],
                         1 + modbus_slaves
                     )
                 )
