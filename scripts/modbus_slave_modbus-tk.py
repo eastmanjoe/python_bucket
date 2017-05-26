@@ -21,10 +21,28 @@ This program starts two modbus slaves for the DAQ code to query.
 
 """
 
-import time
 import sys
+import time
 import argparse
 import serial
+from serial.tools import list_ports
+import os
+import re
+import logging
+import contextlib
+from io import StringIO
+
+# chose an implementation, depending on os
+#~ if sys.platform == 'cli':
+#~ else:
+if os.name == 'nt':  # sys.platform == 'win32':
+    from serial.tools.list_ports_windows import comports
+elif os.name == 'posix':
+    from serial.tools.list_ports_posix import comports
+#~ elif os.name == 'java':
+else:
+    raise ImportError("Sorry: no implementation for your platform ('{}') available".format(os.name))
+
 
 # ---------------------------------------------------------------------------#
 # modbus-tk
@@ -32,11 +50,6 @@ import modbus_tk
 import modbus_tk.defines as modbus_defines
 import modbus_tk.modbus_rtu as modbus_rtu
 import modbus_tk.modbus_tcp as modbus_tcp
-# ---------------------------------------------------------------------------#
-
-# ---------------------------------------------------------------------------#
-# logging
-import logging
 
 
 # ---------------------------------------------------------------------------#
@@ -57,7 +70,7 @@ def setup_logger(loglevel, logfilename):
     # logger.addHandler(handler_stream)
 
     if logfilename != '':
-        handler_file = logging.FileHandler('c:\\temp\\' + logfilename)
+        handler_file = logging.FileHandler(logfilename)
         # handler_file = logging.FileHandler('/home/jeastman/logs/' + logfilename)
         handler_file_formatter = logging.Formatter('%(asctime)s %(levelname)s: %(message)s')
         handler_file.setFormatter(handler_file_formatter)
@@ -69,6 +82,24 @@ def setup_logger(loglevel, logfilename):
 
 
 # ---------------------------------------------------------------------------#
+def show_ports(args):
+    logger.info('Searching for available ports')
+    logger.info('Available ports are:')
+
+    ports = sorted(comports())
+    avail_ports = []
+
+    for n, (port, desc, hwid) in enumerate(ports, 1):
+        logger.info('\t{}'.format(port))
+        avail_ports.append(port)
+
+    logger.debug('Finished searching for available ports')
+    return avail_ports
+
+# ---------------------------------------------------------------------------#
+def run(args):
+    # logger.info('Modbus-tk verbose set to %s' % args.verbose)
+    start_modbus_slave(args.num.split(':'), args.ports.split(':'), args.verbose)
 
 
 # ---------------------------------------------------------------------------#
@@ -76,8 +107,11 @@ def start_modbus_slave(modbus_ports_and_slaves_per_port, com_ports, verbose_enab
     num_modbus_ports = int(modbus_ports_and_slaves_per_port[0])
     num_slaves_per_port = int(modbus_ports_and_slaves_per_port[1])
 
+    holding_register_values = [
+        str(hreg) for hreg in range(1 + (10000 * num_slaves_per_port), 10000 + (10000 * num_slaves_per_port))
+    ]
+
     mb_server = []
-    mb_server_slave = []
 
     # modbus-tk
     logger.info('Number of Modbus Slave Ports is %d' % num_modbus_ports)
@@ -99,6 +133,7 @@ def start_modbus_slave(modbus_ports_and_slaves_per_port, com_ports, verbose_enab
                     )
                 )
             )
+
             mb_server[modbus_ports].start()
             mb_server[modbus_ports].set_verbose(verbose_enabled)
 
@@ -108,27 +143,31 @@ def start_modbus_slave(modbus_ports_and_slaves_per_port, com_ports, verbose_enab
             else:
                 logger.info('Modbus-tk verbose disabled')
 
-            mb_server_slave.append([])
 
             for modbus_slaves in range(0, num_slaves_per_port):
-                holding_register_values = [
-                    str(hreg) for hreg in range(1 + (10000 * modbus_slaves), 5000 + (10000 * modbus_slaves))
-                ]
+                logger.debug('Adding modbus slave #{} to {} port'.format(1 + modbus_slaves, com_ports[modbus_ports]))
+                mb_server[modbus_ports].add_slave(1 + modbus_slaves)
 
-                mb_server_slave[modbus_ports].append(mb_server[modbus_ports].add_slave(1 + modbus_slaves))
-                mb_server_slave[modbus_ports][modbus_slaves].add_block('0', modbus_defines.HOLDING_REGISTERS, 1, 50000)
-                mb_server_slave[modbus_ports][modbus_slaves].set_values('0', 100, ','.join(holding_register_values))
+                mb_slave = mb_server[modbus_ports].get_slave(1 + modbus_slaves)
+                mb_slave.add_block('0', modbus_defines.HOLDING_REGISTERS, 1, 50000)
+                mb_slave.set_values('0', 1, holding_register_values)
+
+                logger.debug(
+                    'Added values {} to {} to modbus slave #{}'.format(
+                        str(mb_slave.get_values('0', 1, 1)[0]),
+                        str(mb_slave.get_values('0', 9999, 1)[0]),
+                        1 + modbus_slaves
+                    )
+                )
 
         # Connect to the slave
         logger.info('All slave(s) running...')
-        logger.info('enter "quit" to close the server(s)')
+        logger.info('enter "quit" or "exit" to close the server(s)')
 
         while True:
             cmd = sys.stdin.readline()
-            cmd_args = cmd.split(' ')
 
-            if (cmd.find('quit') == 0) or (cmd.find('q') == 0):
-                # sys.stdout.write('bye-bye\n')
+            if (cmd.find('quit') == 0) or (cmd.find('q') == 0) or (cmd.find('exit') == 0):
                 logger.info('bye-bye')
                 break
 
@@ -144,11 +183,19 @@ def start_modbus_slave(modbus_ports_and_slaves_per_port, com_ports, verbose_enab
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('num', help='number of modbus slave ports and number of slaves per port (format is 1:1)')
-    parser.add_argument('ports', help='ports to use for the modbus slaves (format is COM1:COM2:COM3)')
+    cli_parser = parser.add_subparsers()
     parser.add_argument('-v', '--verbose', help='enables/disable modbus-tk verbose mode', action='store_true')
     parser.add_argument('-l', '--level', help='defines the log level to be dispayed to the screen', default='info')
     parser.add_argument('-f', '--filename', help='defines the filename of the debugs log', default='')
+
+    list_ports_parser = cli_parser.add_parser('show_ports', help='list available ports')
+    list_ports_parser.set_defaults(func=show_ports)
+
+    mb_slave_parser = cli_parser.add_parser('slave', help='run the modbus slave')
+    mb_slave_parser.set_defaults(func=run)
+    mb_slave_parser.add_argument('num', help='number of modbus slave ports and number of slaves per port (format is 1:1)')
+    mb_slave_parser.add_argument('ports', help='ports to use for the modbus slaves (format is COM1:COM2:COM3)')
+
     args = parser.parse_args()
 
     if args.verbose:
@@ -156,11 +203,12 @@ if __name__ == '__main__':
 
     # start-up logger
     logger = modbus_tk.utils.create_logger(name='console', level=args.level.upper(),
-                                           record_format="%(levelname)s: %(message)s")
+                                           record_format="%(message)s")
 
     setup_logger(args.level, args.filename)
 
     logger.info('Script started on: {}'.format(time.asctime(time.localtime(time.time()))))
 
-    # logger.info('Modbus-tk verbose set to %s' % args.verbose)
-    start_modbus_slave(args.num.split(':'), args.ports.split(':'), args.verbose)
+    args.func(args)
+
+
