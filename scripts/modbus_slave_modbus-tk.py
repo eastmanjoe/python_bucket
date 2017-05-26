@@ -51,7 +51,8 @@ import modbus_tk.defines as modbus_defines
 import modbus_tk.modbus_rtu as modbus_rtu
 import modbus_tk.modbus_tcp as modbus_tcp
 
-
+# integer regex
+int_regex = re.compile(r"^\w\d+")
 # ---------------------------------------------------------------------------#
 def setup_logger(loglevel, logfilename):
     # assuming loglevel is bound to the string value obtained from the
@@ -121,33 +122,40 @@ def start_modbus_slave(modbus_ports_and_slaves_per_port, com_ports, verbose_enab
 
     try:
         for modbus_ports in range(0, num_modbus_ports):
-            logger.info('COM Port #%d is: %s' % (modbus_ports + 1, com_ports[modbus_ports]))
+            if int_regex.match(com_ports[modbus_ports]) is not None:
+                logger.info('Starting Slave #{} on TCP Port {}'.format(modbus_ports + 1, com_ports[modbus_ports]))
 
-            mb_server.append(
-                modbus_rtu.RtuServer(
-                    serial.Serial(
-                        port=str(com_ports[modbus_ports]),
-                        baudrate=9600,
-                        bytesize=8,
-                        parity="N",
-                        stopbits=1,
-                        xonxoff=False
+                mb_server.append(
+                    modbus_tcp.TcpServer(
+                        port=int(com_ports[modbus_ports])
                     )
                 )
-            )
+
+            else:
+                logger.info('Starting Slave #{} on COM Port {}'.format(modbus_ports + 1, com_ports[modbus_ports]))
+
+                mb_server.append(
+                    modbus_rtu.RtuServer(
+                        serial.Serial(
+                            port=str(com_ports[modbus_ports]),
+                            baudrate=9600,
+                            bytesize=8,
+                            parity="N",
+                            stopbits=1,
+                            xonxoff=False
+                        )
+                    )
+                )
 
             mb_server[modbus_ports].start()
             mb_server[modbus_ports].set_verbose(verbose_enabled)
 
             if verbose_enabled:
-                logger.info('Modbus-tk verbose enabled')
                 mb_server[modbus_ports].set_verbose(True)
-            else:
-                logger.info('Modbus-tk verbose disabled')
 
 
             for modbus_slaves in range(0, num_slaves_per_port):
-                logger.debug('Adding modbus slave #{} to {} port'.format(1 + modbus_slaves, com_ports[modbus_ports]))
+                logger.debug('Adding modbus slave #{} to port {}'.format(1 + modbus_slaves, com_ports[modbus_ports]))
                 mb_server[modbus_ports].add_slave(1 + modbus_slaves)
 
                 mb_slave = mb_server[modbus_ports].get_slave(1 + modbus_slaves)
@@ -157,10 +165,11 @@ def start_modbus_slave(modbus_ports_and_slaves_per_port, com_ports, verbose_enab
                 mb_slave.set_values('1', 1, holding_register_values)
 
                 logger.debug(
-                    'Added values {} to {} to modbus slave #{}'.format(
+                    'Added values {} to {} to modbus slave #{} on port {}'.format(
                         mb_slave.get_values('0', 1, 1)[0],
                         mb_slave.get_values('0', number_of_registers, 1)[0],
-                        1 + modbus_slaves
+                        1 + modbus_slaves,
+                        com_ports[modbus_ports]
                     )
                 )
 
@@ -212,6 +221,9 @@ if __name__ == '__main__':
     setup_logger(args.level, args.filename)
 
     logger.info('Script started on: {}'.format(time.asctime(time.localtime(time.time()))))
+
+    if args.verbose:
+        logger.info('Modbus-tk verbose enabled')
 
     args.func(args)
 
