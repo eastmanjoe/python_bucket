@@ -5,19 +5,13 @@
 """
 This program starts two modbus slaves for the DAQ code to query.
 
-#  requirement 1: serial library must be installed in the system
-#  requirement 2: modbus-tk  can be downloaded from the link below,
-#  http://code.google.com/p/modbus-tk/downloads/detail?name=modbus-tk-0.4.2.zip
-#  once downloaded it must be installed
-#
-#  This python script expects 3 STRING arguments passed-in as inputs:
-#  1) Number of modbuses in use    e.g     1  or  2
-#  2) COM PORT 'A'    e.g.    COM24   as recognized by the system
-#  3) COM PORT 'B'    e.g.    COM21   as recognized by the system
-#
-#  How to call the script from the command line example,
-#  C:\python> modbus_slave_DAS4_prod_test.py 1 COM24 COM21 True or
-#  C:\python> modbus_slave_DAS4_prod_test.py 2 COM24 COM21 False or
+requirements:
+    pip install modbus-tk pyserial
+
+notes:
+    to use on linux, the modbus slave ports (502, etc.) must be redirected to ports higher than 1024.  use iptables to
+    perform the redirection.
+        sudo iptables -v -t nat -I PREROUTING -p tcp --dport 502:508 -j REDIRECT --to-ports 8502-8508
 
 """
 
@@ -25,24 +19,17 @@ import sys
 import time
 import argparse
 import serial
-from serial.tools import list_ports
 import os
 import re
 import logging
-import contextlib
-from io import StringIO
 
 # chose an implementation, depending on os
-#~ if sys.platform == 'cli':
-#~ else:
-if os.name == 'nt':  # sys.platform == 'win32':
+if os.name == 'nt':
     from serial.tools.list_ports_windows import comports
 elif os.name == 'posix':
     from serial.tools.list_ports_posix import comports
-#~ elif os.name == 'java':
 else:
     raise ImportError("Sorry: no implementation for your platform ('{}') available".format(os.name))
-
 
 # ---------------------------------------------------------------------------#
 # modbus-tk
@@ -53,6 +40,8 @@ import modbus_tk.modbus_tcp as modbus_tcp
 
 # integer regex
 int_regex = re.compile(r"^\w\d+")
+
+
 # ---------------------------------------------------------------------------#
 def setup_logger(loglevel, logfilename):
     # assuming loglevel is bound to the string value obtained from the
@@ -97,9 +86,9 @@ def show_ports(args):
     logger.debug('Finished searching for available ports')
     return avail_ports
 
+
 # ---------------------------------------------------------------------------#
 def run(args):
-    # logger.info('Modbus-tk verbose set to %s' % args.verbose)
     start_modbus_slave(args.num.split(':'), args.ports.split(':'), args.verbose)
 
 
@@ -187,9 +176,6 @@ def start_modbus_slave(modbus_ports_and_slaves_per_port, com_ports, verbose_enab
     finally:
         for modbus_ports in range(0, num_modbus_ports):
             mb_server[modbus_ports].stop()
-
-
-# ---------------------------------------------------------------------------#
 
 
 # ---------------------------------------------------------------------------#
