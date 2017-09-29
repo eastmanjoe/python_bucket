@@ -3,7 +3,15 @@
 #
 #
 """
-This program starts two modbus slaves for the DAQ code to query.
+#  This python script expects 3 STRING arguments passed-in as inputs:
+#  1) Number of modbuses in use    e.g     1  or  2
+#  2) COM PORT 'A'    e.g.    COM24   as recognized by the system
+#  3) COM PORT 'B'    e.g.    COM21   as recognized by the system
+#
+#
+
+command line example:
+    python modbus_slave_modbus-tk.py slave 9:32 /dev/ttyUSB1:/dev/ttyUSB0:8502:8503:8504:8505:8506:8507:8508
 
 requirements:
     pip install modbus-tk pyserial
