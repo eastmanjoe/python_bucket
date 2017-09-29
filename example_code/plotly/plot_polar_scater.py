@@ -2,24 +2,25 @@ import plotly.offline as py
 import plotly.graph_objs as go
 import numpy as np
 
-voltage_a_angle = 0.0
-voltage_b_angle = 239.0
-voltage_c_angle = 131.0
-voltage_an = 206.23
-voltage_bn = 221.30
-voltage_cn = 217.09
-current_a_angle = -10.23
-current_b_angle = -7.20
-current_c_angle = -7.00
-current_a = 915.35
-current_b = 892.41
-current_c = 892.69
+voltage_a_angle = 120
+voltage_b_angle = 120
+voltage_c_angle = 120
+voltage_an = 282
+voltage_bn = 280
+voltage_cn = 280
+current_a_angle = 40.6
+current_b_angle = 42.3
+current_c_angle = 41.9
+current_a = 57
+current_b = 57
+current_c = 58
 
 current_vector = go.Scatter(
     r = [current_a, current_b, current_c],
     t = [voltage_a_angle - current_a_angle, voltage_b_angle - current_b_angle, voltage_c_angle - current_c_angle],
     mode='markers',
     name='Current',
+    text=['Current A', 'Current B', 'Current C'],
     # symbol="diamond",
     line=dict(
         color='rgb(27,158,119)',
@@ -38,6 +39,7 @@ voltage_vector = go.Scatter(
     t=[voltage_a_angle, voltage_b_angle, voltage_c_angle],
     mode='markers',
     name='Voltage',
+    text=['Voltage A', 'Voltage B', 'Voltage C'],
     # symbol="diamond",
     line=dict(
         color='rgb(217,95,2)',
