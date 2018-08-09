@@ -75,14 +75,17 @@ def setupLogger(loglevel, logfilename):
 #---------------------------------------------------------------------------#
 def establishConnection(ip_address, x320_mac, lan_connection_name):
     logger.info('Attemping to establish connection to the X320...')
+    
+    x320_mac = x320_mac.replace('-', ':')
+    x320_mac = x320_mac.upper()
 
-    logger.debug('Setting arp cache')
     arp = ['arp', '-s', ip_address, x320_mac]    #this command is what is was suggested in the manual
+    logger.debug('Setting arp cache {%s}' % arp)
     #arp = ['netsh', 'interface', 'ipv4', 'add', 'neighbors', lan_connection_name, ip_address, x320_mac]    #this command is Thadeus's suggestion
     subprocess.call(arp)
 
-    logger.debug('Pinging X320')
-    ping = ['ping', '-n', '5', '-l', '102', ip_address]
+    ping = ['ping', '-c', '5', '-l', '102', ip_address]
+    logger.debug('Pinging X320 {%s}' % ping)
     ping_response = subprocess.call(ping)
     logger.debug('Ping Response is: %d' % ping_response)
 
@@ -155,6 +158,16 @@ def configX320(auth, ip_address, subnet, gateway, ambient_temp_id):
         '&gw3=' + gateway_fields[2] + '&gw4=' + gateway_fields[3] + '&pdns1=0&pdns2=0&pdns3=0' \
         '&pdns4=0&adns1=0&adns2=0&adns3=0&adns4=0&lP=80&nS=ten&nM=half&sA=&msp=25&sUN=&sP=' \
         '&sndA=&email1=&email2=&email3=&email4=&email5=&eCType=0'
+    logger.debug('Network Configuration: %s' % setting_string)
+
+    r = requests.get(url + setting_string, auth=auth)
+    assert r.status_code == 200
+    
+    #config advanced nwtwork
+    # logger.debug('-----------------------------------------------------------')
+    # logger.debug('Setting advanced network configuration')
+    # logger.debug('-----------------------------------------------------------')
+    setting_string = 'rmtSrvSetup.srv?modEnbl=yes&mP=502'
     logger.debug('Network Configuration: %s' % setting_string)
 
     r = requests.get(url + setting_string, auth=auth)
